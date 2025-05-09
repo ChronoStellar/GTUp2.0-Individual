@@ -196,6 +196,7 @@ struct TimerSetView: View {
                 VStack(spacing: 0) {
                     Button(action: {
                         showLabelPicker.toggle()
+                        
                     }) {
                         HStack {
                             Text("Label")
@@ -298,7 +299,17 @@ struct TimerSetView: View {
                             hours = tempHours
                             minutes = tempMinutes
                             seconds = tempSeconds
+                            
+                            UserDefaults.standard.set(hours, forKey: "timerHours")
+                            UserDefaults.standard.set(minutes, forKey: "timerMinutes")
+                            UserDefaults.standard.set(seconds, forKey: "timerSeconds")
+                            UserDefaults.standard.set(breakMinutes, forKey: "breakMinutes")
+                            UserDefaults.standard.set(selectedLabel, forKey: "timerLabel")
+                            UserDefaults.standard.set(selectedTimerEndOption, forKey: "timerEndOption")
+                            
                             showTimePicker = false
+                            
+                            
                         }
                         .foregroundColor(.blue.opacity(0.8))
                     }

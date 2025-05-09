@@ -87,22 +87,4 @@ class Break {
         let minutes = components.minute ?? 0
         return (hours, minutes)
     }
-//
-//    // Example usage: Get working hours start and end as integers
-//    private var workingStartComponents: (hours: Int, minutes: Int) {
-//        getTimeComponents(from: workingHoursStart)
-//    }
-//
-//    private var workingEndComponents: (hours: Int, minutes: Int) {
-//        getTimeComponents(from: workingHoursEnd)
-//    }
-//    // Example usage: Get working hours start and end as integers
-//    private var restStartComponents: (hours: Int, minutes: Int) {
-//        getTimeComponents(from: workingHoursStart)
-//    }
-//
-//    private var restEndComponents: (hours: Int, minutes: Int) {
-//        getTimeComponents(from: workingHoursEnd)
-//    }
 }
-

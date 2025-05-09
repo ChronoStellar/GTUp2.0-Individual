@@ -7,9 +7,19 @@
 
 import SwiftUI
 
-struct CurvedLine: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+struct CurvedLine: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        
+        let startPoint = CGPoint(x: rect.minX, y: rect.maxY)
+        let endPoint = CGPoint(x: rect.maxX, y: rect.minY)
+        let controlPoint1 = CGPoint(x: rect.midX - 50, y: rect.maxY)
+        let controlPoint2 = CGPoint(x: rect.midX + 50, y: rect.minY)
+        
+        path.move(to: startPoint)
+        path.addCurve(to: endPoint, control1: controlPoint1, control2: controlPoint2)
+        
+        return path
     }
 }
 

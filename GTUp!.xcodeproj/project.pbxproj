@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9B4978FE2DCDA843006F4839 /* testView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B4978FD2DCDA843006F4839 /* testView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		9B4978FD2DCDA843006F4839 /* testView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = testView.swift; sourceTree = "<group>"; };
 		9B8A28472DC87403003769DD /* GTUp!.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GTUp!.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -32,6 +37,7 @@
 		9B8A283E2DC87403003769DD = {
 			isa = PBXGroup;
 			children = (
+				9B4978FD2DCDA843006F4839 /* testView.swift */,
 				9B8A28492DC87403003769DD /* GTUp! */,
 				9B8A28482DC87403003769DD /* Products */,
 			);
@@ -119,6 +125,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B4978FE2DCDA843006F4839 /* testView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

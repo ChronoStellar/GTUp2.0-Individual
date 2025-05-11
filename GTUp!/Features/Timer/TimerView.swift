@@ -10,12 +10,15 @@ import Combine
 import UserNotifications
 
 struct TimerView: View {
+    //dependency
     @EnvironmentObject var manager: HealthKitManager
     let breakRecord: Break
     var onBreakRecorded: () -> Void
     
+    //Checks if the timer currently is being used
     @Binding var isTimerRunning: Bool
     
+    // animation states
     @State private var isAnimating: Bool = false
     @State private var lineOffset: CGFloat = 0
     @State private var textOpacity: Double = 0
@@ -34,22 +37,26 @@ struct TimerView: View {
     @State private var workDurationOpacity: Double = 0
     @State private var breakDurationOpacity: Double = 0
     
+    // timer variables
     @State private var workTimeRemaining: Int = 0
     @State private var breakTimeRemaining: Int = 0
     @State private var initialWorkTime: Int = 0
     @State private var initialBreakTime: Int = 0
     @State private var timer: Timer? = nil
     
+    // interuption variables
     @State private var prevStep: Int = 0
     @State private var currStep: Int = 0
     @State private var tempStep: Int = 0
     @State private var stepPatienceCounter: Int = 0
     
+    // timer stop variables
     @State private var isLongPressing: Bool = false
     @State private var longPressProgress: CGFloat = 0.0
     private let longPressDuration: Double = 1.0
     @State var longPressTime = 0.0
     
+    // ?
     @State private var timerStartDate: Date? = nil
 
     var body: some View {
@@ -89,7 +96,7 @@ struct TimerView: View {
                 .onAppear {
                     lineOffset = 20
                 }
-            
+    
             VStack(spacing: 25) {
                 Image("Work")
                     .resizable()
@@ -127,6 +134,7 @@ struct TimerView: View {
                         value: workOffset
                     )
                 
+                // middle diagonal line
                 ZStack {
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {

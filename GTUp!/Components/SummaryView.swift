@@ -46,7 +46,3 @@ struct DataSummaryView: View {
         .cornerRadius(20)
     }
 }
-
-//#Preview {
-//    DataSummaryView()
-//}

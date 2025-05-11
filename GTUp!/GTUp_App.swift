@@ -12,10 +12,10 @@ struct GTUp_App: App {
     @StateObject var manager = HealthKitManager()
     var body: some Scene {
         WindowGroup {
-//            SplashScreenView() // Atur SplashScreenView sebagai view awal
-            ContentView()
-                .environmentObject(manager)
-                .modelContainer(for: Break.self)
+//            ContentView()
+//                .environmentObject(manager)
+//                .modelContainer(for: Break.self)
+            TestView()
         }
     }
 }

@@ -1,53 +1,20 @@
 import SwiftUI
 
-extension Date {
-    /// Returns a string formatted as "yyyy-MM-dd"
-    var formattedAsQueryDate: String {
-        return Date.queryFormatter.string(from: self)
-    }
-    
-    /// Static DateFormatter for "yyyy-MM-dd" format
-    private static let queryFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.timeZone = .current
-        formatter.locale = .current
-        return formatter
-    }()
-    
-    static func fromFormattedString(_ string: String) -> Date? {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            return formatter.date(from: string)
-        }
-}
-
 struct CalendarView: View {
     @Binding var selectedDate : String
-    let days = Array(-7...0) // Range of days relative to today
+    let days = Array(-30...0) // Range of days relative to today
     // Date formatters for weekday and day
-    private let weekdayFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE" // Short weekday, e.g., "Sat"
-        return formatter
-    }()
-
-    private let dayFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd" // Two-digit day, e.g., "23"
-        return formatter
-    }()
     
     var body: some View {
         VStack {
             ScrollView(.horizontal, showsIndicators: false) {
                 ScrollViewReader { proxy in // Add ScrollViewReader
-                    HStack(spacing: 10) {
+                    HStack(spacing: 1) {
                         ForEach(days, id: \.self) { dayOffset in
                             let currentDate = Calendar.current.date(byAdding: .day, value: dayOffset, to: Date())!
                             let formattedDate = currentDate.formattedAsQueryDate
-                            let weekdayText = weekdayFormatter.string(from: currentDate).uppercased()
-                            let dayText = dayFormatter.string(from: currentDate)
+                            let weekdayText = currentDate.formattedAsWeekday.uppercased()
+                            let dayText = currentDate.formattedAsDay
 
                             Button(action: {
                                 selectedDate = formattedDate

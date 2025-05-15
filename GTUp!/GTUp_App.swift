@@ -15,7 +15,8 @@ struct GTUp_App: App {
 //            ContentView()
 //                .environmentObject(manager)
 //                .modelContainer(for: Break.self)
-            TestView()
+//            TestView()
+//            TestTimerView()
         }
     }
 }

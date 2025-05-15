@@ -93,10 +93,10 @@ struct ContentView: View {
                         .animation(.interpolatingSpring(stiffness: 200, damping: 25, initialVelocity: 0), value: dragOffset)
                     
                     TimerView(
-                        breakRecord: latestBreak,
-                        onBreakRecorded: {
-                            updateQuery()
-                        },
+//                        breakRecord: latestBreak,
+//                        onBreakRecorded: {
+//                            updateQuery()
+//                        },
                         isTimerRunning: $isTimerRunning
                     )
                     .environmentObject(manager)

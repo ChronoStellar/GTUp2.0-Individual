@@ -3,8 +3,19 @@ import Combine
 import UserNotifications
 
 struct TimerView: View {
-    @StateObject private var viewModel = TimerViewModel(endDate: .now, cycle: "work")
+    //param
+    let selectedBreak: Break?
     @Binding var isTimerRunning: Bool
+    
+    @StateObject private var viewModel: TimerViewModel
+        
+        // Initialize the view model with selectedBreak and other parameters
+    init(selectedBreak: Break?, isTimerRunning: Binding<Bool>) {
+        self.selectedBreak = selectedBreak
+        self._isTimerRunning = isTimerRunning
+        self._viewModel = StateObject(wrappedValue: TimerViewModel(endDate: .now, cycle: "Work", selectedBreak: selectedBreak))
+    }
+    
     @State private var selectedMode: String? = nil
 
     // Animation states (keeping only essentials for brevity)
@@ -136,7 +147,7 @@ struct TimerView: View {
             .onTapGesture {
                 if !isTimerRunning {
                     withAnimation {
-                        selectedMode = "Break"
+                        selectedMode = "Break"                        
                         breakScale = 1.5
                         workScale = 0.5
                         lineScale = 0.5

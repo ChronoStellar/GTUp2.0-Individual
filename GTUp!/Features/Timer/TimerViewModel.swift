@@ -15,11 +15,13 @@ final class TimerViewModel: ObservableObject {
     @Published var isTimerRunning: Bool = false
     private var activeActivity: Activity<LiveActivityAttributes>?
     private var timer: Timer?
+    private let selectedBreak: Break?
 
-    init(endDate: Date? = nil, cycle: String) {
-        self.endDate = endDate
-        self.cycle = cycle
-    }
+    init(endDate: Date? = nil, cycle: String, selectedBreak: Break? = nil) {
+            self.endDate = endDate
+            self.cycle = cycle
+            self.selectedBreak = selectedBreak
+        }
 
     // General Timer Functions
     func startTimer(duration: TimeInterval) {
@@ -54,8 +56,10 @@ final class TimerViewModel: ObservableObject {
         let hours = UserDefaults.standard.integer(forKey: "timerHours")
         let minutes = UserDefaults.standard.integer(forKey: "timerMinutes")
         let seconds = UserDefaults.standard.integer(forKey: "timerSeconds")
-        let totalTime = TimeInterval(getTotalTime(hours, minutes, seconds))
+        let totalSeconds = getTotalTime(hours, minutes, seconds)
+        let totalTime = TimeInterval(totalSeconds)
         startTimer(duration: totalTime)
+        selectedBreak?.updateWorkDuration(totalSeconds)
     }
 
     func startBreakTimer() {
@@ -63,6 +67,7 @@ final class TimerViewModel: ObservableObject {
         let minutes = UserDefaults.standard.integer(forKey: "breakMinutes")
         let totalTime = TimeInterval(minutes * 60) // Convert minutes to seconds
         startTimer(duration: totalTime)
+        selectedBreak?.recordBreak()
     }
 
     // Live Activity
@@ -81,8 +86,8 @@ final class TimerViewModel: ObservableObject {
         let state = LiveActivityAttributes.ContentState(
             cycle: cycle,
             endDate: endDate,
-            countWork: 10, // Replace with actual work count
-            countBreak: 4, // Replace with actual break count
+            countWork: Int(selectedBreak?.getWorkDuration() ?? 0), // Replace with actual work count
+            countBreak: Int(selectedBreak?.getBreakTotal() ?? 0), // Replace with actual break count
         )
 
         do {

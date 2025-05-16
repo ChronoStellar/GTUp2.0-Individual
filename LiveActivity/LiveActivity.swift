@@ -20,11 +20,11 @@ struct LiveActivity: Widget {
                         .font(.system(size: 36, weight: .bold, design: .default))
                         .foregroundColor(.fontApp)
                     Spacer()
-                    HStack {
-                        Image("workspace")
+                    HStack(spacing:-1) {
+                        Image("work-sit")
                             .resizable()
                             .frame(width: 20, height: 20)
-                        Text("\(context.state.countWork)H |")
+                        Text("\(context.state.countWork)h |")
                             .foregroundStyle(.fontApp)
                         Image("walking")
                             .resizable()
@@ -54,11 +54,11 @@ struct LiveActivity: Widget {
                         Spacer()
                         VStack(alignment: .trailing) {
                             Spacer()
-                            HStack {
-                                Image("workspace")
+                            HStack(spacing: -1) {
+                                Image("work-sit")
                                     .resizable()
                                     .frame(width: 20, height: 20)
-                                Text("\(context.state.countWork)H |")
+                                Text("\(context.state.countWork)h |")
                                     .foregroundStyle(.fontApp)
                                 Image("walking")
                                     .resizable()

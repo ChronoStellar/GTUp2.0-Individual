@@ -13,7 +13,7 @@ class Break {
     var date : String = ""
     private var breakCounter : Int = 0 // how many times user took breaks
     private var breakTotal: Int = 0 // in minutes
-    private var restDuration: Int = 0 // total mandatory rest / lunch break in minutes
+    private var restDuration: Int = 60 // total mandatory rest / lunch break in minutes
     private var workDuration: Int = 0 // total workhour in minutes
 
     init(date: Date = Date()) {
@@ -28,35 +28,15 @@ class Break {
         breakCounter += 1
         let breakPeriods = breakTime()
         self.breakTotal += breakPeriods
-        updateRestDuration()
-        updateWorkDuration()
     }
     //set
-    func updateWorkDuration() {
-        var workingStartComponents: (hours: Int, minutes: Int) {
-            getTimeComponents(from: UserDefaults.standard.object(forKey: "workingHoursStart") as! Date)
-        }
-        let start = workingStartComponents.hours * 60 + workingStartComponents.minutes
-        
-        var workingEndComponents: (hours: Int, minutes: Int) {
-            getTimeComponents(from: UserDefaults.standard.object(forKey: "workingHoursEnd") as! Date)
-        }
-        let end = workingEndComponents.hours * 60 + workingEndComponents.minutes
-        
-        self.workDuration = end - start
+    func updateWorkDuration(_ duration: Int) {
+        self.workDuration += duration
     }
-    func updateRestDuration() {
-        var restStartComponents: (hours: Int, minutes: Int) {
-            getTimeComponents(from: UserDefaults.standard.object(forKey: "restHoursStart") as! Date)
-        }
-        let start = restStartComponents.hours * 60 + restStartComponents.minutes
-        
-        var restEndComponents: (hours: Int, minutes: Int) {
-            getTimeComponents(from: UserDefaults.standard.object(forKey: "restHoursEnd") as! Date)
-        }
-        let end = restEndComponents.hours * 60 + restEndComponents.minutes
-        
-        self.restDuration = end - start
+    
+    func updateRestDuration(){
+        self.restDuration = UserDefaults.standard.integer(forKey: "breakMinutes")
+        print("BreakUpdated: \(restDuration)")
     }
     
     //gets
@@ -73,7 +53,7 @@ class Break {
         return restDuration
     }
     func getWorkDuration() -> Double {
-        return Double(workDuration - getBreakTotal()) / 60
+        return (Double(workDuration) / (60 * 60))
     }
     
     //genral functions

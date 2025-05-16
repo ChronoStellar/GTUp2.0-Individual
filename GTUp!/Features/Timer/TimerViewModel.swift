@@ -48,10 +48,6 @@ final class TimerViewModel: ObservableObject {
         stopLiveActivity()
     }
 
-    func toggleTimer() {
-        isTimerRunning.toggle()
-    }
-
     // Cycle Timer
     func startWorkTimer() {
         cycle = "Work"

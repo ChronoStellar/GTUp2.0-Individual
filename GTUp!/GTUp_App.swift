@@ -12,11 +12,10 @@ struct GTUp_App: App {
     @StateObject var manager = HealthKitManager()
     var body: some Scene {
         WindowGroup {
-//            ContentView()
-//                .environmentObject(manager)
-//                .modelContainer(for: Break.self)
-//            TestView()
-//            TestTimerView()
+            ContentView()
+                .environmentObject(manager)
+                .modelContainer(for: Break.self)
+//            TimerView(isTimerRunning: .constant(false))
         }
     }
 }

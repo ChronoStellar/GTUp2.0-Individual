@@ -1,10 +1,3 @@
-//
-//  TimerViewModel.swift
-//  GTUp!
-//
-//  Created by Hendrik Nicolas Carlo on 10/05/25.
-//
-
 import Foundation
 import SwiftUI
 import ActivityKit
@@ -16,12 +9,14 @@ final class TimerViewModel: ObservableObject {
     private var activeActivity: Activity<LiveActivityAttributes>?
     private var timer: Timer?
     private let selectedBreak: Break?
+    private var pendingWorkSeconds: Int? // To store work duration for later update
 
     init(endDate: Date? = nil, cycle: String, selectedBreak: Break? = nil) {
-            self.endDate = endDate
-            self.cycle = cycle
-            self.selectedBreak = selectedBreak
-        }
+        self.endDate = endDate
+        self.cycle = cycle
+        self.selectedBreak = selectedBreak
+        self.pendingWorkSeconds = nil
+    }
 
     // General Timer Functions
     func startTimer(duration: TimeInterval) {
@@ -36,6 +31,12 @@ final class TimerViewModel: ObservableObject {
                 return
             }
             if Date() >= endDate {
+                // Timer completed naturally
+                if cycle == "Work", let workSeconds = pendingWorkSeconds {
+                    selectedBreak?.updateWorkDuration(workSeconds)
+                } else if cycle == "Break" {
+                    selectedBreak?.recordBreak()
+                }
                 stopTimer()
                 timer.invalidate()
             }
@@ -47,6 +48,7 @@ final class TimerViewModel: ObservableObject {
         isTimerRunning = false
         timer?.invalidate()
         timer = nil
+        pendingWorkSeconds = nil // Clear pending work seconds
         stopLiveActivity()
     }
 
@@ -57,9 +59,9 @@ final class TimerViewModel: ObservableObject {
         let minutes = UserDefaults.standard.integer(forKey: "timerMinutes")
         let seconds = UserDefaults.standard.integer(forKey: "timerSeconds")
         let totalSeconds = getTotalTime(hours, minutes, seconds)
+        pendingWorkSeconds = totalSeconds // Store for later update
         let totalTime = TimeInterval(totalSeconds)
         startTimer(duration: totalTime)
-        selectedBreak?.updateWorkDuration(totalSeconds)
     }
 
     func startBreakTimer() {
@@ -67,7 +69,6 @@ final class TimerViewModel: ObservableObject {
         let minutes = UserDefaults.standard.integer(forKey: "breakMinutes")
         let totalTime = TimeInterval(minutes * 60) // Convert minutes to seconds
         startTimer(duration: totalTime)
-        selectedBreak?.recordBreak()
     }
 
     // Live Activity
@@ -86,8 +87,8 @@ final class TimerViewModel: ObservableObject {
         let state = LiveActivityAttributes.ContentState(
             cycle: cycle,
             endDate: endDate,
-            countWork: Int(selectedBreak?.getWorkDuration() ?? 0), // Replace with actual work count
-            countBreak: Int(selectedBreak?.getBreakTotal() ?? 0), // Replace with actual break count
+            countWork: Int(selectedBreak?.getWorkDuration() ?? 0),
+            countBreak: Int(selectedBreak?.getBreakTotal() ?? 0)
         )
 
         do {
@@ -105,10 +106,20 @@ final class TimerViewModel: ObservableObject {
 
     func stopLiveActivity() {
         Task {
-            if let activity = activeActivity {
+            guard let activity = activeActivity else {
+                print("No active Live Activity to stop.")
+                return
+            }
+            do {
                 await activity.end(nil, dismissalPolicy: .immediate)
+                print("Live Activity stopped successfully: \(activity.id)")
                 activeActivity = nil
-                print("Live Activity stopped: \(activity.id)")
+                
+                // Debug: List all active activities
+                let activities = Activity<LiveActivityAttributes>.activities
+                print("Remaining activities: \(activities.map { $0.id })")
+            } catch {
+                print("Failed to stop Live Activity: \(error)")
             }
         }
     }

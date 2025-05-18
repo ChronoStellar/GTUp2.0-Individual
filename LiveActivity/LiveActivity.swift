@@ -16,11 +16,11 @@ struct LiveActivity: Widget {
                 Text(context.state.cycle)
                     .foregroundStyle(.fontApp)
                 HStack {
-                    Text(context.state.endDate, style: .timer)
+                    DateTimerView(date: context.state.endDate)
                         .font(.system(size: 36, weight: .bold, design: .default))
                         .foregroundColor(.fontApp)
                     Spacer()
-                    HStack(spacing:-1) {
+                    HStack(spacing: -1) {
                         Image("work-sit")
                             .resizable()
                             .frame(width: 20, height: 20)
@@ -48,7 +48,7 @@ struct LiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     HStack(alignment: .bottom) {
-                        Text(context.state.endDate, style: .timer)
+                        DateTimerView(date: context.state.endDate)
                             .font(.system(size: 48, weight: .bold, design: .default))
                             .foregroundColor(.fontApp)
                         Spacer()
@@ -82,7 +82,7 @@ struct LiveActivity: Widget {
                         .overlay(alignment: .trailing) {
                             DateTimerView(date: context.state.endDate)
                         }
-                }else {
+                } else {
                     Text("00:00")
                         .hidden()
                         .overlay(alignment: .trailing) {
@@ -97,7 +97,6 @@ struct LiveActivity: Widget {
         }
     }
 }
-
 
 extension LiveActivityAttributes {
     static var preview: LiveActivityAttributes {

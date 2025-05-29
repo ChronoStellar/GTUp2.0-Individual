@@ -19,39 +19,34 @@ struct TimerSetView: View {
     @State private var showTimePicker: Bool = false
     @State private var showBreakPicker: Bool = false
     
-    // Ganti dua state alert dengan satu state menggunakan enum
+    // Alert type enum
     enum AlertType {
         case error
         case none
     }
     @State private var alertType: AlertType = .none
-    @State private var showSuccessNotification: Bool = false // State untuk notifikasi sukses
+    @State private var showSuccessNotification: Bool = false // State for success notification
     
     @State private var selectedLabel: String = "None"
-    @State private var labels: [String] = ["None", "Work", "Study", "Exercise"]
-    @State private var showLabelPicker: Bool = false
-    @State private var showAddLabelModal: Bool = false
-    @State private var newLabel: String = ""
-    
     @State private var selectedTimerEndOption: String
-    @State private var showTimerEndPicker: Bool = false
+    @State private var isTimerEndMenuOpen: Bool = false // Track menu open state
     private let timerEndOptions = ["Vibrate", "Notification Only", "Ringing"]
     
     @State private var vibrateOn: Bool = true
     
     init() {
-        // Ambil nilai dari UserDefaults
+        // Retrieve values from UserDefaults
         let savedHours = UserDefaults.standard.integer(forKey: "timerHours")
         let savedMinutes = UserDefaults.standard.integer(forKey: "timerMinutes")
         let savedSeconds = UserDefaults.standard.integer(forKey: "timerSeconds")
         let savedBreakMinutes = UserDefaults.standard.integer(forKey: "breakMinutes")
         
-        // Jika UserDefaults belum memiliki nilai (aplikasi baru diunduh), set default work time ke 5 menit
+        // If UserDefaults has no values (new app install), set default work time to 5 minutes
         if savedHours == 0 && savedMinutes == 0 && savedSeconds == 0 {
             _hours = State(initialValue: 0)
-            _minutes = State(initialValue: 5) // Default 5 menit
+            _minutes = State(initialValue: 5) // Default 5 minutes
             _seconds = State(initialValue: 0)
-            // Simpan default ke UserDefaults
+            // Save defaults to UserDefaults
             UserDefaults.standard.set(0, forKey: "timerHours")
             UserDefaults.standard.set(5, forKey: "timerMinutes")
             UserDefaults.standard.set(0, forKey: "timerSeconds")
@@ -61,7 +56,7 @@ struct TimerSetView: View {
             _seconds = State(initialValue: savedSeconds)
         }
         
-        // Set default break ke 5 menit kalau belum ada
+        // Set default break to 5 minutes if not set
         if savedBreakMinutes == 0 {
             _breakMinutes = State(initialValue: 5)
             UserDefaults.standard.set(5, forKey: "breakMinutes")
@@ -69,9 +64,8 @@ struct TimerSetView: View {
             _breakMinutes = State(initialValue: savedBreakMinutes)
         }
         
-        if let savedLabels = UserDefaults.standard.array(forKey: "labels") as? [String] {
-            _labels = State(initialValue: savedLabels)
-        }
+        let savedLabel = UserDefaults.standard.string(forKey: "timerLabel") ?? "None"
+        _selectedLabel = State(initialValue: savedLabel)
         
         let savedTimerEndOption = UserDefaults.standard.string(forKey: "timerEndOption") ?? "Vibrate"
         _selectedTimerEndOption = State(initialValue: savedTimerEndOption)
@@ -82,179 +76,142 @@ struct TimerSetView: View {
             Color.primaryApp
                 .ignoresSafeArea()
             
-            VStack(spacing: 20) {
-                Text("Timer")
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                    .padding(.top)
-                    .padding(.leading, 15)
+            
+            VStack {
+                ZStack {
+                    Color.secondaryApp
+                    Text("Timer")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.fontApp)
+                    Spacer()
+                }
+                .frame(height: 65)
+                .background(.secondaryApp)
                 
-                Spacer()
-                
+                // Work Duration Section
                 VStack(spacing: 5) {
-                    Button(action: {
-                        tempHours = hours
-                        tempMinutes = minutes
-                        tempSeconds = seconds
-                        showTimePicker.toggle()
-                    }) {
-                        Text(String(format: "%02d:%02d:%02d", hours, minutes, seconds))
-                            .font(.system(size: 60, weight: .light, design: .default))
-                            .foregroundColor(.white)
-                    }
-                    
-                    Rectangle()
-                        .frame(height: 2)
-                        .foregroundColor(.gray.opacity(0.5))
-                        .padding(.horizontal)
-                        .padding(.bottom, 5)
-                    
-                    Button(action: {
-                        tempBreakMinutes = breakMinutes
-                        showBreakPicker.toggle()
-                    }) {
-                        HStack {
-                            Text("\(breakMinutes)m break")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                            Image(systemName: "chevron.down")
-                                .foregroundColor(.gray)
-                        }
-                    }
-                }
-                .padding(.top, 30)
-                .padding(.bottom, 13)
-                .padding(.horizontal)
-                .background(Color.gray.opacity(0.2))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(.horizontal)
-                
-                Button(action: {
-                    // Hitung total waktu dalam detik
-                    let totalSeconds = (hours * 3600) + (minutes * 60) + seconds
-                    print("Total seconds: \(totalSeconds)") // Debugging
-                    
-                    // Validasi: Pastikan total waktu minimal 1 detik
-                    if totalSeconds < 1 {
-                        print("Timer invalid, setting alertType to error") // Debugging
-                        alertType = .error // Set tipe alert ke error
-                    } else {
-                        print("Timer valid, saving to UserDefaults") // Debugging
-                        // Simpan ke UserDefaults
-                        UserDefaults.standard.set(hours, forKey: "timerHours")
-                        UserDefaults.standard.set(minutes, forKey: "timerMinutes")
-                        UserDefaults.standard.set(seconds, forKey: "timerSeconds")
-                        UserDefaults.standard.set(breakMinutes, forKey: "breakMinutes")
-                        UserDefaults.standard.set(selectedLabel, forKey: "timerLabel")
-                        UserDefaults.standard.set(selectedTimerEndOption, forKey: "timerEndOption")
-                        
-                        print("Timer set: \(hours)h \(minutes)m \(seconds)s, Break: \(breakMinutes)m, Label: \(selectedLabel), When Timer Ends: \(selectedTimerEndOption)")
-                        
-                        // Kirim notifikasi ke TimerView
-                        NotificationCenter.default.post(name: NSNotification.Name("TimerSetNotification"), object: nil)
-                        
-                        print("Showing success notification") // Debugging
-                        withAnimation {
-                            showSuccessNotification = true // Tampilkan notifikasi sukses
-                        }
-                        // Sembunyikan notifikasi setelah 2 detik
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            withAnimation {
-                                showSuccessNotification = false
-                            }
-                        }
-                    }
-                }) {
-                    Text("Set")
-                        .font(.system(size: 18, weight: .bold))
+                    Text("Work Duration")
+                        .font(.system(size: 20, weight: .medium))
                         .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                    
+                    
+                    VStack(spacing: 5) {
+                        Button(action: {
+                            tempHours = hours
+                            tempMinutes = minutes
+                            tempSeconds = seconds
+                            showTimePicker.toggle()
+                        }) {
+                            Text(String(format: "%02d:%02d:%02d", hours, minutes, seconds))
+                                .font(.system(size: 60, weight: .light, design: .default))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .padding(.vertical, 25)
+                    .padding(.horizontal, 60)
+                    .background(Color.secondaryApp)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .padding(.horizontal)
-                .alert(isPresented: Binding<Bool>(
-                    get: { alertType != .none },
-                    set: { _ in alertType = .none }
-                )) {
-                    print("Showing alert, type: \(alertType)") // Debugging
-                    switch alertType {
-                    case .error:
-                        return Alert(
-                            title: Text("Invalid Timer"),
-                            message: Text("Please set the timer to at least 1 second."),
-                            dismissButton: .default(Text("OK"))
-                        )
-                    case .none:
-                        return Alert(title: Text("")) // Tidak akan dipanggil
-                    }
-                }
+                .padding(.top, 30)
                 
+                // Break Duration Section
+                VStack(spacing: 5) {
+                    Text("Break Duration")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                    
+                    VStack(spacing: 5) {
+                        Button(action: {
+                            tempBreakMinutes = breakMinutes
+                            showBreakPicker.toggle()
+                        }) {
+                            Text(String(format: "%02d:%02d", breakMinutes, 0))
+                                .font(.system(size: 38, weight: .light, design: .default))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .padding(.vertical, 15)
+                    .padding(.horizontal, 130)
+                    .background(Color.secondaryApp)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                
+                // Settings List
                 VStack(spacing: 0) {
-                    Button(action: {
-                        showLabelPicker.toggle()
-                        
-                    }) {
-                        HStack {
-                            Text("Label")
-                                .font(.system(size: 16))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            HStack {
-                                Text(selectedLabel)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.white)
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.vertical, 10)
-                        .background(Color.gray.opacity(0.2))
-                    }
-                    
-                    Button(action: {
-                        showTimerEndPicker.toggle()
-                    }) {
-                        HStack {
-                            Text("When Timer Ends")
-                                .font(.system(size: 16))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            HStack {
-                                Text(selectedTimerEndOption)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.white)
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.vertical, 10)
-                        .background(Color.gray.opacity(0.2))
-                    }
-                    
+                    // Label Setting
                     HStack {
-                        Text("Add as widget")
-                            .font(.system(size: 16))
+                        Text("Label")
+                            .font(.system(size: 17))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        Toggle("", isOn: $vibrateOn)
-                            .labelsHidden()
-                            .toggleStyle(SwitchToggleStyle(tint: .blue))
+                        TextField("Enter label", text: $selectedLabel)
+                            .font(.system(size: 16))
+                            .foregroundColor(.white.opacity(0.8))
+                            .multilineTextAlignment(.trailing)
+                            .padding(.vertical, 1)
+                            .padding(.horizontal, 8)
+                            .frame(maxWidth: 100)
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 10)
-                    .background(Color.gray.opacity(0.2))
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 11)
+                    .background(Color.secondaryApp)
+
+                    // Separator
+                    Rectangle()
+                        .frame(height: 0.8)
+                        .foregroundColor(.gray.opacity(0.3))
+                        .padding(.horizontal, 1)
+                    
+                    // When Timer Ends Setting
+                    HStack {
+                        Text("When Timer Ends")
+                            .font(.system(size: 17))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Menu {
+                            ForEach(timerEndOptions, id: \.self) { option in
+                                Button(action: {
+                                    selectedTimerEndOption = option
+                                }) {
+                                    Text(option)
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Text(selectedTimerEndOption)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.white.opacity(0.8))
+                                Image(systemName: isTimerEndMenuOpen ? "chevron.down" : "chevron.right")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.blue)
+                            }
+                            .frame(maxWidth: 150, alignment: .trailing)
+                        }
+                        .onTapGesture {
+                            isTimerEndMenuOpen.toggle()
+                        }
+                        .simultaneousGesture(TapGesture().onEnded {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                isTimerEndMenuOpen = false
+                            }
+                        })
+                    }
+                    .padding(.horizontal, 15)
+                    .padding(.vertical, 13)
+                    .background(Color.secondaryApp)
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal)
+                .padding(.top, 10)
                 
                 Spacer()
             }
@@ -276,16 +233,17 @@ struct TimerSetView: View {
                     .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
                     .transition(.opacity)
                 }
-                .position(x: UIScreen.main.bounds.width / 2, y: 100) // Posisi di atas layar
+                .position(x: UIScreen.main.bounds.width / 2, y: 100)
             }
             
             // Time Picker
             if showTimePicker {
-                Color.primaryApp.opacity(0.7)
-                    .background(.ultraThinMaterial)
+                Color.black.opacity(0.7)
                     .ignoresSafeArea()
-                    .environment(\.colorScheme, .dark)
-                
+                    .onTapGesture {
+                        showTimePicker = false // Allow tapping outside to dismiss
+                    }
+
                 VStack {
                     HStack {
                         Button("Cancel") {
@@ -296,20 +254,41 @@ struct TimerSetView: View {
                         Spacer()
                         
                         Button("Done") {
-                            hours = tempHours
-                            minutes = tempMinutes
-                            seconds = tempSeconds
+                            let totalSeconds = (tempHours * 3600) + (tempMinutes * 60) + tempSeconds
+                            print("Total seconds: \(totalSeconds)")
                             
-                            UserDefaults.standard.set(hours, forKey: "timerHours")
-                            UserDefaults.standard.set(minutes, forKey: "timerMinutes")
-                            UserDefaults.standard.set(seconds, forKey: "timerSeconds")
-                            UserDefaults.standard.set(breakMinutes, forKey: "breakMinutes")
-                            UserDefaults.standard.set(selectedLabel, forKey: "timerLabel")
-                            UserDefaults.standard.set(selectedTimerEndOption, forKey: "timerEndOption")
-                            
-                            showTimePicker = false
-                            
-                            
+                            if totalSeconds < 1 {
+                                print("Timer invalid, setting alertType to error")
+                                alertType = .error
+                            } else {
+                                hours = tempHours
+                                minutes = tempMinutes
+                                seconds = tempSeconds
+                                
+                                print("Timer valid, saving to UserDefaults")
+                                UserDefaults.standard.set(hours, forKey: "timerHours")
+                                UserDefaults.standard.set(minutes, forKey: "timerMinutes")
+                                UserDefaults.standard.set(seconds, forKey: "timerSeconds")
+                                UserDefaults.standard.set(breakMinutes, forKey: "breakMinutes")
+                                UserDefaults.standard.set(selectedLabel, forKey: "timerLabel")
+                                UserDefaults.standard.set(selectedTimerEndOption, forKey: "timerEndOption")
+                                
+                                print("Timer set: \(hours)h \(minutes)m \(seconds)s, Break: \(breakMinutes)m, Label: \(selectedLabel), When Timer Ends: \(selectedTimerEndOption)")
+                                
+                                NotificationCenter.default.post(name: NSNotification.Name("TimerSetNotification"), object: nil)
+                                
+                                print("Showing success notification")
+                                withAnimation {
+                                    showSuccessNotification = true
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    withAnimation {
+                                        showSuccessNotification = false
+                                    }
+                                }
+                                
+                                showTimePicker = false
+                            }
                         }
                         .foregroundColor(.blue.opacity(0.8))
                     }
@@ -317,32 +296,44 @@ struct TimerSetView: View {
                     
                     HStack(spacing: 0) {
                         Picker("Hours", selection: $tempHours) {
-                            ForEach(0..<9) { hour in
-                                Text("\(hour)h")
+                            ForEach(0..<24) { hour in
+                                Text(String(format: "%02d", hour))
                                     .tag(hour)
                                     .foregroundColor(.white)
                             }
                         }
                         .pickerStyle(.wheel)
+                        .frame(maxWidth: .infinity)
+                        
+//                        Text(":")
+//                            .font(.system(size: 24, weight: .semibold))
+//                            .foregroundColor(.white)
                         
                         Picker("Minutes", selection: $tempMinutes) {
                             ForEach(0..<60) { minute in
-                                Text("\(minute)m")
+                                Text(String(format: "%02d", minute))
                                     .tag(minute)
                                     .foregroundColor(.white)
                             }
                         }
                         .pickerStyle(.wheel)
+                        .frame(maxWidth: .infinity)
+                        
+//                        Text(":")
+//                            .font(.system(size: 24, weight: .semibold))
+//                            .foregroundColor(.white)
                         
                         Picker("Seconds", selection: $tempSeconds) {
                             ForEach(0..<60) { second in
-                                Text("\(second)s")
+                                Text(String(format: "%02d", second))
                                     .tag(second)
                                     .foregroundColor(.white)
                             }
                         }
                         .pickerStyle(.wheel)
+                        .frame(maxWidth: .infinity)
                     }
+                    .padding(.horizontal)
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
@@ -351,14 +342,31 @@ struct TimerSetView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .padding()
                 .environment(\.colorScheme, .dark)
+                .alert(isPresented: Binding<Bool>(
+                    get: { alertType != .none },
+                    set: { _ in alertType = .none }
+                )) {
+                    print("Showing alert, type: \(alertType)")
+                    switch alertType {
+                    case .error:
+                        return Alert(
+                            title: Text("Invalid Timer"),
+                            message: Text("Please set the timer to at least 1 second."),
+                            dismissButton: .default(Text("OK"))
+                        )
+                    case .none:
+                        return Alert(title: Text(""))
+                    }
+                }
             }
             
             // Break Picker
             if showBreakPicker {
-                Color.primaryApp.opacity(0.7)
-                    .background(.ultraThinMaterial)
+                Color.black.opacity(0.7)
                     .ignoresSafeArea()
-                    .environment(\.colorScheme, .dark)
+                    .onTapGesture {
+                        showBreakPicker = false // Allow tapping outside to dismiss
+                    }
                 
                 VStack {
                     HStack {
@@ -370,8 +378,22 @@ struct TimerSetView: View {
                         Spacer()
                         
                         Button("Done") {
-                            breakMinutes = tempBreakMinutes
-                            showBreakPicker = false
+                            if tempBreakMinutes < 1 {
+                                alertType = .error
+                            } else {
+                                breakMinutes = tempBreakMinutes
+                                UserDefaults.standard.set(breakMinutes, forKey: "breakMinutes")
+                                NotificationCenter.default.post(name: NSNotification.Name("BreakDurationSetNotification"), object: nil, userInfo: ["breakMinutes": breakMinutes])
+                                showBreakPicker = false
+                                withAnimation {
+                                    showSuccessNotification = true
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    withAnimation {
+                                        showSuccessNotification = false
+                                    }
+                                }
+                            }
                         }
                         .foregroundColor(.blue.opacity(0.8))
                     }
@@ -393,176 +415,21 @@ struct TimerSetView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .padding()
                 .environment(\.colorScheme, .dark)
-            }
-            
-            // Label Picker
-            if showLabelPicker {
-                Color.primaryApp.opacity(0.7)
-                    .background(.ultraThinMaterial)
-                    .ignoresSafeArea()
-                    .environment(\.colorScheme, .dark)
-                
-                VStack {
-                    HStack {
-                        Button("Cancel") {
-                            showLabelPicker = false
-                        }
-                        .foregroundColor(.red)
-                        
-                        Spacer()
-                        
-                        Button("Done") {
-                            showLabelPicker = false
-                        }
-                        .foregroundColor(.blue.opacity(0.8))
+                .alert(isPresented: Binding<Bool>(
+                    get: { alertType != .none },
+                    set: { _ in alertType = .none }
+                )) {
+                    switch alertType {
+                    case .error:
+                        return Alert(
+                            title: Text("Invalid Break Duration"),
+                            message: Text("Please set the break duration to at least 1 minute."),
+                            dismissButton: .default(Text("OK"))
+                        )
+                    case .none:
+                        return Alert(title: Text(""))
                     }
-                    .padding()
-                    
-                    ScrollView {
-                        VStack(spacing: 0) {
-                            ForEach(labels, id: \.self) { label in
-                                HStack {
-                                    Text(label)
-                                        .font(.system(size: 16))
-                                        .foregroundColor(.white)
-                                        .padding(.vertical, 10)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .onTapGesture {
-                                            selectedLabel = label
-                                            showLabelPicker = false
-                                        }
-                                    
-                                    Spacer()
-                                    
-                                    if label != "None" {
-                                        Button(action: {
-                                            if let index = labels.firstIndex(of: label) {
-                                                labels.remove(at: index)
-                                                if selectedLabel == label {
-                                                    selectedLabel = "None"
-                                                }
-                                                UserDefaults.standard.set(labels, forKey: "labels")
-                                            }
-                                        }) {
-                                            Image(systemName: "trash")
-                                                .foregroundColor(.red)
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal)
-                                .background(selectedLabel == label ? Color.gray.opacity(0.3) : Color.clear)
-                            }
-                        }
-                    }
-                    .frame(height: 200)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    
-                    Button(action: {
-                        showLabelPicker = false
-                        showAddLabelModal = true
-                    }) {
-                        Text("Add New Label")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.blue.opacity(0.8))
-                            .padding(.vertical, 10)
-                            .frame(maxWidth: .infinity)
-                            .background(Color.gray.opacity(0.2))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 10)
                 }
-                .padding()
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding()
-                .environment(\.colorScheme, .dark)
-            }
-            
-            // Add Label Modal
-            if showAddLabelModal {
-                Color.primaryApp.opacity(0.7)
-                    .background(.ultraThinMaterial)
-                    .ignoresSafeArea()
-                    .environment(\.colorScheme, .dark)
-                
-                VStack {
-                    HStack {
-                        Button("Cancel") {
-                            newLabel = ""
-                            showAddLabelModal = false
-                        }
-                        .foregroundColor(.red)
-                        
-                        Spacer()
-                        
-                        Button("Done") {
-                            if !newLabel.isEmpty && !labels.contains(newLabel) {
-                                labels.append(newLabel)
-                                selectedLabel = newLabel
-                                UserDefaults.standard.set(labels, forKey: "labels")
-                            }
-                            newLabel = ""
-                            showAddLabelModal = false
-                        }
-                        .foregroundColor(.blue.opacity(0.8))
-                    }
-                    .padding()
-                    
-                    TextField("Enter new label", text: $newLabel)
-                        .font(.system(size: 16))
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.gray.opacity(0.2))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
-                .padding()
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding()
-                .environment(\.colorScheme, .dark)
-            }
-            
-            // When Timer Ends Picker Modal
-            if showTimerEndPicker {
-                Color.primaryApp.opacity(0.7)
-                    .background(.ultraThinMaterial)
-                    .ignoresSafeArea()
-                    .environment(\.colorScheme, .dark)
-                
-                VStack {
-                    HStack {
-                        Button("Cancel") {
-                            showTimerEndPicker = false
-                        }
-                        .foregroundColor(.red)
-                        
-                        Spacer()
-                        
-                        Button("Done") {
-                            showTimerEndPicker = false
-                        }
-                        .foregroundColor(.blue.opacity(0.8))
-                    }
-                    .padding()
-                    
-                    Picker("When Timer Ends", selection: $selectedTimerEndOption) {
-                        ForEach(timerEndOptions, id: \.self) { option in
-                            Text(option)
-                                .tag(option)
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .pickerStyle(.wheel)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
-                .padding()
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding()
-                .environment(\.colorScheme, .dark)
             }
         }
     }

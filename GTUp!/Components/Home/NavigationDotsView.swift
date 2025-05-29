@@ -11,29 +11,29 @@ struct NavigationDotsView: View {
     @Binding var currentScreen: Screen
     
     private let screens: [Screen] = [.timer, .home, .data]
+    private let icons: [Screen: String] = [
+        .timer: "clock",
+        .home: "house",
+        .data: "chart.bar"
+    ]
     
     var body: some View {
         HStack(spacing: 15) {
-            ForEach(screens.indices, id: \.self) { index in
-                if index == 1 {
-                    Image(systemName: currentScreen == .profile ? "chevron.down" : "chevron.up")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(currentScreen == screens[index] ? .white : .gray.opacity(0.7))
-                        .frame(width: 10, height: 25)
-                        .animation(.easeInOut(duration: 0.3), value: currentScreen)
-                } else {
-                    Circle()
-                        .frame(width: 10, height: 25)
-                        .foregroundColor(currentScreen == screens[index] ? .white : .gray.opacity(0.7))
-                        .animation(.spring(), value: currentScreen)
-                }
+            ForEach(screens, id: \.self) { screen in
+                Image(systemName: icons[screen] ?? "circle")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(currentScreen == screen ? .white : .primaryApp.opacity(0.8))
+                    .frame(width: 15, height: 15)
+                    .animation(.easeInOut(duration: 0.3), value: currentScreen)
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(
             Capsule()
-                .fill(Color.gray.opacity(0.3))
+                .fill(Color.gray.opacity(0.5))
+            
         )
+        
     }
 }

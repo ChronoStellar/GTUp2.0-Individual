@@ -25,17 +25,13 @@ struct ContentView: View {
     @State private var dragOffset: CGFloat = 0
     @State private var profileOpacity: Double = 0.0
     
-    // State untuk mengontrol visibilitas pemberitahuan swipe up
-    @State private var showSwipeUpHint: Bool = true
-    @State private var hintOpacity: Double = 0.0
-    @State private var arrowOffset: CGFloat = 0.0
-    
     // State untuk mengontrol visibilitas pemberitahuan swipe kiri/kanan
     @State private var showSwipeSideHint: Bool = true
     @State private var sideHintOpacity: Double = 0.0
     @State private var leftArrowOffset: CGFloat = 0.0
     @State private var rightArrowOffset: CGFloat = 0.0
-    @State private var hasShownSwipeSideHint: Bool = false // State untuk melacak apakah swipe side hint sudah ditampilkan selama sesi ini
+    @State private var hasShownSwipeSideHint: Bool = false
+    @State private var stopArrowAnimation: Bool = false
     
     private let tabScreens: [Screen] = [.timer, .home, .data]
     
@@ -45,7 +41,6 @@ struct ContentView: View {
         _selectedDate = State(initialValue: todayString)
         UserDefaults.standard.set(todayString, forKey: "todayDate")
         
-        // Reset state untuk swipe side hint setiap kali aplikasi dibuka
         _hasShownSwipeSideHint = State(initialValue: false)
         _showSwipeSideHint = State(initialValue: true)
     }
@@ -94,9 +89,6 @@ struct ContentView: View {
                     
                     TimerView(
                         selectedBreak: latestBreak,
-//                        onBreakRecorded: {
-//                            updateQuery()
-//                        },
                         isTimerRunning: $isTimerRunning
                     )
                     .environmentObject(manager)
@@ -128,21 +120,11 @@ struct ContentView: View {
                             if horizontalTranslation > 50 && tabIndex > 0 {
                                 tabIndex -= 1
                                 currentScreen = tabScreens[tabIndex]
-                                showSwipeSideHint = false // Sembunyikan hint saat swipe
+                                showSwipeSideHint = false
                             } else if horizontalTranslation < -50 && tabIndex < tabScreens.count - 1 {
                                 tabIndex += 1
                                 currentScreen = tabScreens[tabIndex]
-                                showSwipeSideHint = false // Sembunyikan hint saat swipe
-                            }
-                            let verticalTranslation = value.translation.height
-                            if verticalTranslation < -100 && currentScreen == .home {
-                                withAnimation(.interpolatingSpring(stiffness: 200, damping: 25, initialVelocity: 0)) {
-                                    isProfileVisible = true
-                                    currentScreen = .profile
-                                    profileDragOffset = 0
-                                    profileOpacity = 1.0
-                                    showSwipeUpHint = false
-                                }
+                                showSwipeSideHint = false
                             }
                             withAnimation(.interpolatingSpring(stiffness: 200, damping: 25, initialVelocity: 0)) {
                                 dragOffset = 0
@@ -178,9 +160,6 @@ struct ContentView: View {
                                         currentScreen = tabScreens[tabIndex]
                                         profileDragOffset = UIScreen.main.bounds.height
                                         profileOpacity = 0.0
-                                        showSwipeUpHint = true
-                                        // Tidak menampilkan swipe side hint lagi selama sesi ini
-                                        startHintAnimation()
                                     }
                                 } else {
                                     withAnimation(.interpolatingSpring(stiffness: 200, damping: 25, initialVelocity: 0)) {
@@ -192,86 +171,86 @@ struct ContentView: View {
                     )
                     .allowsHitTesting(!isTimerRunning)
                 
-                // Pemberitahuan swipe kiri/kanan (muncul setiap kali aplikasi dibuka)
+                // Swipe hint
                 if tabIndex == 1 && showSwipeSideHint && !isTimerRunning {
                     HStack {
-                        // Swipe kiri
                         VStack(spacing: 5) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.white)
-                                .offset(x: leftArrowOffset)
-                                .animation(
-                                    Animation.easeInOut(duration: 0.8)
-                                        .repeatForever(autoreverses: true),
-                                    value: leftArrowOffset
-                                )
-                            
-                            Text("Swipe left to set timer")
-                                .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.leading)
+                            HStack {
+                                Spacer()
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .offset(x: stopArrowAnimation ? 0 : leftArrowOffset)
+                                    .animation(
+                                        stopArrowAnimation ? nil : Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+                                        value: leftArrowOffset
+                                    )
+                                Text("Swipe left                                      to set timer")
+                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.leading)
+                            }
                         }
                         .opacity(sideHintOpacity)
-                        .padding(.leading, 20)
+                        .padding(.leading, 5)
                         
                         Spacer()
                         
-                        // Swipe kanan
                         VStack(spacing: 5) {
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.white)
-                                .offset(x: rightArrowOffset)
-                                .animation(
-                                    Animation.easeInOut(duration: 0.8)
-                                        .repeatForever(autoreverses: true),
-                                    value: rightArrowOffset
-                                )
-                            
-                            Text("Swipe right to see data")
-                                .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.trailing)
+                            HStack {
+                                Spacer()
+                                Text("Swipe right to see data")
+                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.trailing)
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .offset(x: (stopArrowAnimation ? 0 : rightArrowOffset) - 5) // Shift left by 5 points
+                                    .animation(
+                                        stopArrowAnimation ? nil : Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+                                        value: rightArrowOffset
+                                    )
+                            }
                         }
                         .opacity(sideHintOpacity)
-                        .padding(.trailing, 20)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    .animation(.easeInOut(duration: 0.5), value: sideHintOpacity)
-                    .onAppear {
-                        startSideHintAnimation()
+                        .padding(.trailing, 5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        .onAppear {
+                            startSideHintAnimation()
+                        }
                     }
                 }
                 
-                // Navigation dots dan pemberitahuan swipe up
+                    
+                
+                // Profile icon with smooth animation
+                VStack {
+                    HStack {
+                        Spacer()
+                        NavigationLink(destination: ProfileView()) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "person.circle")
+                                    .font(.system(size: 40, weight: .regular))
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 20)
+                        }
+                        .padding(.top, 10)
+                        .padding(.trailing, 20)
+                        .offset(x: offsetForIndex(1))
+                        .opacity(opacityForIndex(1))
+                        .allowsHitTesting(tabIndex == 1 && !isTimerRunning)
+                        .animation(.interpolatingSpring(stiffness: 200, damping: 25, initialVelocity: 0), value: tabIndex)
+                        .animation(.interpolatingSpring(stiffness: 200, damping: 25, initialVelocity: 0), value: dragOffset)
+                    }
+                    Spacer()
+                }
+                
+                // Navigation dots
                 VStack {
                     Spacer()
-                    
-                    if tabIndex == 1 && showSwipeUpHint && !isTimerRunning {
-                        VStack(spacing: 5) {
-                            Image(systemName: "chevron.up")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.white)
-                                .offset(y: arrowOffset)
-                                .animation(
-                                    Animation.easeInOut(duration: 0.8)
-                                        .repeatForever(autoreverses: true),
-                                    value: arrowOffset
-                                )
-                            
-                            Text("Swipe up to see profile")
-                                .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundColor(.white)
-                        }
-                        .opacity(hintOpacity)
-                        .animation(.easeInOut(duration: 0.5), value: hintOpacity)
-                        .padding(.bottom, 10)
-                        .onAppear {
-                            startHintAnimation()
-                        }
-                    }
-                    
                     NavigationDotsView(currentScreen: $currentScreen)
                         .padding(.bottom, 30)
                         .allowsHitTesting(!isTimerRunning)
@@ -287,29 +266,12 @@ struct ContentView: View {
         }
     }
     
-    private func startHintAnimation() {
-        hintOpacity = 0.0
-        arrowOffset = 0.0
-        
-        withAnimation(.easeInOut(duration: 0.5)) {
-            hintOpacity = 0.8
-        }
-        
-        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-            arrowOffset = -10
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            withAnimation(.easeInOut(duration: 0.5)) {
-                showSwipeUpHint = false
-            }
-        }
-    }
     
     private func startSideHintAnimation() {
         sideHintOpacity = 0.0
         leftArrowOffset = 0.0
         rightArrowOffset = 0.0
+        stopArrowAnimation = false
         
         withAnimation(.easeInOut(duration: 0.5)) {
             sideHintOpacity = 0.8
@@ -320,10 +282,21 @@ struct ContentView: View {
             rightArrowOffset = 10
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            withAnimation(.easeInOut(duration: 0.5)) {
-                showSwipeSideHint = false
-                hasShownSwipeSideHint = true // Tandai bahwa hint sudah ditampilkan selama sesi ini
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                self.stopArrowAnimation = true
+                self.leftArrowOffset = 0
+                self.rightArrowOffset = 0
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                withAnimation(.easeInOut(duration: 0.7)) {
+                    self.sideHintOpacity = 0.0
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                    self.showSwipeSideHint = false
+                    self.hasShownSwipeSideHint = true
+                }
             }
         }
     }

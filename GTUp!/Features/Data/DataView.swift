@@ -35,10 +35,11 @@ struct DataView: View {
                         VStack(alignment: .center) {
                             Text("No data for \(selectedDate)")
                                 .foregroundColor(.fontApp)
-                                .font(.system(size: 18, weight: .bold, design: .default))
+                                .font(.system(size: 18, weight: .regular, design: .default))
                         }.frame(width: 360, height: 100)
                             .background(.secondaryApp)
                             .cornerRadius(20)
+                            .opacity(0.8)
                     }
                     DataSummaryView(selectedBreak: selectedBreak)
                 }
@@ -55,3 +56,7 @@ struct DataView: View {
         }
     }
 }
+
+//#Preview {
+//    DataView(selectedBreak: Break?, selectedDate: <#T##Binding<String>#>)
+//}

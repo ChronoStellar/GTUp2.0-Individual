@@ -22,6 +22,7 @@ final class TimerViewModel: ObservableObject {
     func startTimer(duration: TimeInterval) {
         endDate = Date().addingTimeInterval(duration)
         isTimerRunning = true
+        scheduleNotification(duration: duration)
         startLiveActivity()
 
         timer?.invalidate() // Prevent multiple timers
@@ -49,6 +50,7 @@ final class TimerViewModel: ObservableObject {
         timer?.invalidate()
         timer = nil
         pendingWorkSeconds = nil // Clear pending work seconds
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         stopLiveActivity()
     }
 
@@ -69,6 +71,25 @@ final class TimerViewModel: ObservableObject {
         let minutes = UserDefaults.standard.integer(forKey: "breakMinutes")
         let totalTime = TimeInterval(minutes * 60) // Convert minutes to seconds
         startTimer(duration: totalTime)
+    }
+
+    // Notifications
+    private func scheduleNotification(duration: TimeInterval) {
+        let content = UNMutableNotificationContent()
+        content.title = "\(cycle) Finished!"
+        content.body = "Your \(cycle.lowercased()) has completed."
+        content.sound = UNNotificationSound.default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: duration, repeats: false)
+        let request = UNNotificationRequest(identifier: "\(cycle)_end", content: content, trigger: trigger)
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error scheduling notification: \(error)")
+            } else {
+                print("Notification scheduled for \(self.cycle)")
+            }
+        }
     }
 
     // Live Activity

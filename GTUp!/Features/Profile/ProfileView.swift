@@ -1,50 +1,30 @@
 import SwiftUI
 
+// MARK: - Main Profile View
 struct ProfileView: View {
-    @State private var name: String
-    @State private var age: String
-    @State private var workingHoursStart: Date
-    @State private var workingHoursEnd: Date
-    @State private var restHoursStart: Date
-    @State private var restHoursEnd: Date
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var name = UserDefaults.standard.string(forKey: "name") ?? "Carlo"
+    @State private var age = UserDefaults.standard.string(forKey: "age") ?? "25"
+    
+    @State private var workingHoursStart = UserDefaults.standard.object(forKey: "workingHoursStart") as? Date ?? defaultDate(hour: 9)
+    @State private var workingHoursEnd = UserDefaults.standard.object(forKey: "workingHoursEnd") as? Date ?? defaultDate(hour: 17)
+    @State private var restHoursStart = UserDefaults.standard.object(forKey: "restHoursStart") as? Date ?? defaultDate(hour: 12)
+    @State private var restHoursEnd = UserDefaults.standard.object(forKey: "restHoursEnd") as? Date ?? defaultDate(hour: 13)
     
     @State private var showingNotifications = false
     @State private var showingResearchStudies = false
     @State private var showingDevices = false
     @State private var showingApps = false
     
-    // State untuk melacak apakah keyboard aktif
     @FocusState private var isNameFieldFocused: Bool
     @FocusState private var isAgeFieldFocused: Bool
     
-    private let timeFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter
-    }()
+    // MARK: - Helper Methods
     
-    init() {
-        let calendar = Calendar.current
-        
-        let savedName = UserDefaults.standard.string(forKey: "name") ?? "Carlo"
-        let savedAge = UserDefaults.standard.string(forKey: "age") ?? "25"
-        
-        let savedWorkingStart = UserDefaults.standard.object(forKey: "workingHoursStart") as? Date
-        let savedWorkingEnd = UserDefaults.standard.object(forKey: "workingHoursEnd") as? Date
-        let savedRestStart = UserDefaults.standard.object(forKey: "restHoursStart") as? Date
-        let savedRestEnd = UserDefaults.standard.object(forKey: "restHoursEnd") as? Date
-        
-        let startComponents = DateComponents(hour: 9, minute: 0)
-        let endComponents = DateComponents(hour: 17, minute: 0)
-        let restStartComponents = DateComponents(hour: 12, minute: 0)
-        let restEndComponents = DateComponents(hour: 13, minute: 0)
-        
-        _name = State(initialValue: savedName)
-        _age = State(initialValue: savedAge)
-        _workingHoursStart = State(initialValue: savedWorkingStart ?? calendar.date(from: startComponents) ?? Date())
-        _workingHoursEnd = State(initialValue: savedWorkingEnd ?? calendar.date(from: endComponents) ?? Date())
-        _restHoursStart = State(initialValue: savedRestStart ?? calendar.date(from: restStartComponents) ?? Date())
-        _restHoursEnd = State(initialValue: savedRestEnd ?? calendar.date(from: restEndComponents) ?? Date())
+    private static func defaultDate(hour: Int) -> Date {
+        Calendar.current.date(from: DateComponents(hour: hour)) ?? Date()
     }
     
     private func saveValues() {
@@ -56,522 +36,411 @@ struct ProfileView: View {
         UserDefaults.standard.set(restHoursEnd, forKey: "restHoursEnd")
     }
     
-    // Fungsi untuk dismiss keyboard
     private func dismissKeyboard() {
         isNameFieldFocused = false
         isAgeFieldFocused = false
     }
     
+    // MARK: - Body
     var body: some View {
         ZStack {
-            Color.primaryApp
-                .ignoresSafeArea()
+            Color.primaryApp.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                Text("Profile")
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                    .padding(.top)
-                    .padding(.leading, 15)
+                // Header
+                headerView
                 
-                Rectangle()
-                    .frame(width: 320, height: 1.5)
-                    .foregroundColor(.white.opacity(0.5))
-                    .padding(.bottom, 5)
-                    .padding(.top)
-                
-                List {
-                    Section {
-                        HStack {
-                            Text("Name")
-                                .foregroundColor(.white)
-                            Spacer()
-                            TextField("Name", text: $name, onCommit: {
-                                saveValues()
-                            })
-                            .foregroundColor(.white.opacity(0.7))
-                            .multilineTextAlignment(.trailing)
-                            .focused($isNameFieldFocused)
-                        }
-                        .listRowBackground(Color.gray.opacity(0.2))
-                        .overlay(
-                            Rectangle()
-                                .frame(height: 0.5)
-                                .foregroundColor(.white.opacity(0.3))
-                                .offset(y: 22)
-                        )
-                        
-                        HStack {
-                            Text("Age")
-                                .foregroundColor(.white)
-                            Spacer()
-                            TextField("Age", text: $age, onCommit: {
-                                saveValues()
-                            })
-                            .foregroundColor(.white.opacity(0.7))
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .focused($isAgeFieldFocused)
-                            .toolbar {
-                                ToolbarItemGroup(placement: .keyboard) {
-                                    Spacer()
-                                    Button(action: {
-                                        dismissKeyboard()
-                                    }) {
-                                        Text("Done")
-                                            .foregroundColor(.blue)
-                                            .font(.system(size: 16, weight: .semibold))
-                                    }
-                                }
-                            }
-                        }
-                        .listRowBackground(Color.gray.opacity(0.2))
-                        .overlay(
-                            Rectangle()
-                                .frame(height: 0.5)
-                                .foregroundColor(.white.opacity(0.3))
-                                .offset(y: 22)
-                        )
-                        
-                        HStack {
-                            Text("Working Hours")
-                                .foregroundColor(.white)
-                            Spacer()
-                            HStack(spacing: 5) {
-                                DatePicker("", selection: $workingHoursStart, displayedComponents: .hourAndMinute)
-                                    .labelsHidden()
-                                    .accentColor(.blue)
-                                    .foregroundColor(.white)
-                                    .environment(\.colorScheme, .dark)
-                                    .frame(width: 70)
-                                    .onChange(of: workingHoursStart) { _ in
-                                        saveValues()
-                                    }
-                                Text("-")
-                                    .foregroundColor(.white.opacity(0.7))
-                                DatePicker("", selection: $workingHoursEnd, displayedComponents: .hourAndMinute)
-                                    .labelsHidden()
-                                    .accentColor(.blue)
-                                    .foregroundColor(.white)
-                                    .environment(\.colorScheme, .dark)
-                                    .frame(width: 70)
-                                    .onChange(of: workingHoursEnd) { _ in
-                                        saveValues()
-                                    }
-                            }
-                        }
-                        .listRowBackground(Color.gray.opacity(0.2))
-                        .overlay(
-                            Rectangle()
-                                .frame(height: 0.5)
-                                .foregroundColor(.white.opacity(0.3))
-                                .offset(y: 22)
-                        )
-                        
-                        HStack(alignment: .center, spacing: 5) {
-                            Text("Lunch Break")
-                                .foregroundColor(.white)
-                                .fixedSize(horizontal: true, vertical: false)
-                            Spacer()
-                            HStack(spacing: 5) {
-                                DatePicker("", selection: $restHoursStart, displayedComponents: .hourAndMinute)
-                                    .labelsHidden()
-                                    .accentColor(.blue)
-                                    .foregroundColor(.white)
-                                    .environment(\.colorScheme, .dark)
-                                    .frame(width: 70)
-                                    .onChange(of: restHoursStart) { _ in
-                                        saveValues()
-                                    }
-                                Text("-")
-                                    .foregroundColor(.white.opacity(0.7))
-                                DatePicker("", selection: $restHoursEnd, displayedComponents: .hourAndMinute)
-                                    .labelsHidden()
-                                    .accentColor(.blue)
-                                    .foregroundColor(.white)
-                                    .environment(\.colorScheme, .dark)
-                                    .frame(width: 70)
-                                    .onChange(of: restHoursEnd) { _ in
-                                        saveValues()
-                                    }
-                            }
-                            .fixedSize(horizontal: true, vertical: false)
-                        }
-                        .listRowBackground(Color.gray.opacity(0.2))
-                        .overlay(
-                            Rectangle()
-                                .frame(height: 0.5)
-                                .foregroundColor(.white.opacity(0.3))
-                                .offset(y: 22)
-                        )
-                        
-                        Button(action: {
-                            showingNotifications = true
-                        }) {
-                            HStack {
-                                Text("Notifications")
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle()) // Pastikan List tidak menelan interaksi tombol
-                        .contentShape(Rectangle()) // Pastikan area tap tombol dikenali
-                        .listRowBackground(Color.gray.opacity(0.2))
-                    }
+                // Main Content
+                ZStack {
+                    Color.primaryApp.ignoresSafeArea()
                     
-                    Section(header: Text("Privacy")
-                        .font(.system(size: 25, weight: .bold))
-                        .foregroundColor(.white)
-                        .textCase(nil)
-                    ) {
-                        Button(action: {
-                            showingApps = true
-                        }) {
-                            HStack {
-                                Text("Apps")
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle()) // Pastikan List tidak menelan interaksi tombol
-                        .contentShape(Rectangle()) // Pastikan area tap tombol dikenali
-                        .listRowBackground(Color.gray.opacity(0.2))
-                        .overlay(
-                            Rectangle()
-                                .frame(height: 0.5)
-                                .foregroundColor(.white.opacity(0.3))
-                                .offset(y: 22)
-                        )
-                        
-                        Button(action: {
-                            showingResearchStudies = true
-                        }) {
-                            HStack {
-                                Text("Research Studies")
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle()) // Pastikan List tidak menelan interaksi tombol
-                        .contentShape(Rectangle()) // Pastikan area tap tombol dikenali
-                        .listRowBackground(Color.gray.opacity(0.2))
-                        .overlay(
-                            Rectangle()
-                                .frame(height: 0.5)
-                                .foregroundColor(.white.opacity(0.3))
-                                .offset(y: 22)
-                        )
-                        
-                        Button(action: {
-                            showingDevices = true
-                        }) {
-                            HStack {
-                                Text("Devices")
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle()) // Pastikan List tidak menelan interaksi tombol
-                        .contentShape(Rectangle()) // Pastikan area tap tombol dikenali
-                        .listRowBackground(Color.gray.opacity(0.2))
-                        .overlay(
-                            Rectangle()
-                                .frame(height: 0.5)
-                                .foregroundColor(.white.opacity(0.3))
-                                .offset(y: 22)
-                        )
-                        
-                        // Added the text here as a row without any button functionality
-                        HStack {
-                            Text("Your data is encrypted on your device and can only be shared with your permission.")
-                                .font(.footnote)
-                                .foregroundColor(.white.opacity(0.7))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 8)
-                        }
-                        .listRowBackground(Color.primaryApp)
-                    }
-                }
-                .listStyle(InsetGroupedListStyle())
-                .scrollContentBackground(.hidden)
-                .foregroundColor(.white)
-                .scrollDisabled(true) // Dipertahankan sesuai permintaan
-                // Deteksi scroll untuk dismiss keyboard (dipertahankan meskipun scroll disabled)
-                .onScrollPhaseChange { oldPhase, newPhase in
-                    if newPhase == .interacting {
-                        dismissKeyboard()
-                    }
-                }
-                
-                // Sheet with iOS-style navigation bar for Notifications
-                .sheet(isPresented: $showingNotifications) {
-                    ModalView(title: "Notifications", isPresented: $showingNotifications) {
-                        VStack(alignment: .leading, spacing: 15) {
-                            Spacer()
-                                .frame(height: 20)
-                            
-                            List {
-                                NotificationSettingRow(title: "Activity Reminders", isOn: true)
-                                    .listRowBackground(Color.gray.opacity(0.2))
-                                    .overlay(
-                                        Rectangle()
-                                            .frame(height: 0.5)
-                                            .foregroundColor(.white.opacity(0.3))
-                                            .offset(y: 22)
-                                    )
-                                
-                                NotificationSettingRow(title: "Weekly Reports", isOn: true)
-                                    .listRowBackground(Color.gray.opacity(0.2))
-                                    .overlay(
-                                        Rectangle()
-                                            .frame(height: 0.5)
-                                            .foregroundColor(.white.opacity(0.3))
-                                            .offset(y: 22)
-                                    )
-                                
-                                NotificationSettingRow(title: "Goal Achievements", isOn: true)
-                                    .listRowBackground(Color.gray.opacity(0.2))
-                                    .overlay(
-                                        Rectangle()
-                                            .frame(height: 0.5)
-                                            .foregroundColor(.white.opacity(0.3))
-                                            .offset(y: 22)
-                                    )
-                                
-                                NotificationSettingRow(title: "Break Reminders", isOn: false)
-                                    .listRowBackground(Color.gray.opacity(0.2))
-                                    .overlay(
-                                        Rectangle()
-                                            .frame(height: 0.5)
-                                            .foregroundColor(.white.opacity(0.3))
-                                            .offset(y: 22)
-                                    )
-                                
-                                NotificationSettingRow(title: "App Updates", isOn: false)
-                                    .listRowBackground(Color.gray.opacity(0.2))
-                            }
-                            .listStyle(PlainListStyle())
+                    VStack(spacing: 0) {
+                        mainContentList
+                            .listStyle(InsetGroupedListStyle())
                             .scrollContentBackground(.hidden)
-                            
-                            Text("You'll receive notifications according to these settings during your specified working hours.")
-                                .font(.footnote)
-                                .foregroundColor(.white.opacity(0.7))
-                                .padding(.horizontal)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                        }
-                    }
-                }
-                
-                // Sheet with iOS-style navigation bar for Research Studies
-                .sheet(isPresented: $showingResearchStudies) {
-                    ModalView(title: "Research Studies", isPresented: $showingResearchStudies) {
-                        NavigationStack {
-                            VStack(alignment: .leading, spacing: 15) {
-                                Text("Active Research Studies")
-                                    .font(.system(size: 22, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal)
-                                    .padding(.top)
-                                
-                                List {
-                                    NavigationLink {
-                                        DetailView(
-                                            title: "Effects of Active Microbreak",
-                                            content: "Risk factors associated with sedentary work and prolonged sitting time can be detrimental to office workers’ health and productivity. Recent literature introduced the concept of active microbreaks and their benefits to sedentary workers. The purpose of this study was to better define active microbreaks and to determine the evidence behind utilizing active microbreaks at work, through a qualitative synthesis of the literature in a systematic review. A comprehensive systematic search was conducted using primarily ergonomics, medicine and allied health databases, in addition to grey literature (CINAHL, Google Scholar, PubMed, and ScienceDirect) and respective ergonomics journals. Six interventional controlled trials (232 total participants) met the inclusion criteria and qualified for the inclusion in this review. The quality of the reviewed articles was deemed to be moderate to high according to the utilized assessment scales. The results of this review may support the use of short active microbreaks (2–3 minutes of light intensity exercises every 30 minutes) due to the observed physical and mental health benefits without negative impact on productivity in the workplace.",
-                                            sourceLink: "https://www.tandfonline.com/doi/pdf/10.1080/23311916.2022.2026206"
-                                        )
-                                    } label: {
-                                        ResearchStudyRow(
-                                            title: "Effects of Active Microbreak",
-                                            description: "How active microbreaks can positively impact the physical and mental well-being of office workers."
-                                        )
-                                    }
-                                    .listRowBackground(Color.gray.opacity(0.2))
-                                    .overlay(
-                                        Rectangle()
-                                            .frame(height: 0.5)
-                                            .foregroundColor(.white.opacity(0.3))
-                                            .padding(.horizontal, 5)
-                                            .offset(y: 10),
-                                        alignment: .bottom
-                                    )
-                                    
-                                    NavigationLink {
-                                        DetailView(
-                                            title: "Workstation Setup Effects on Discomfort and Productivity",
-                                            content: "Compare musculoskeletal discomfort, productivity, postural risks, and perceived fatigue for a sit-stand-walk intervention between two workstation configurations – one, individually customized for office workers according to ergonomic guidelines (Ergo-Fit); another, self-adjusted by office workers according to their preference (Self-Adjusted).",
-                                            sourceLink: "https://www.sciencedirect.com/science/article/abs/pii/S0003687018307221"
-                                        )
-                                    } label: {
-                                        ResearchStudyRow(
-                                            title: "Workstation Setup Effects on Discomfort and Productivity",
-                                            description: "This study compares two workstation setups—ergonomically-fitted (Ergo-Fit) and self-adjusted—during a 60-minute sit-stand-walk computer task."
-                                        )
-                                    }
-                                    .listRowBackground(Color.gray.opacity(0.2))
-                                    .overlay(
-                                        Rectangle()
-                                            .frame(height: 0.5)
-                                            .foregroundColor(.white.opacity(0.3))
-                                            .padding(.horizontal, 5)
-                                            .offset(y: 10),
-                                        alignment: .bottom
-                                    )
-                                    
-                                    NavigationLink {
-                                        DetailView(
-                                            title: "Computer Terminal Work and The Benefit of Microbreaks",
-                                            content: "Microbreaks are scheduled rest breaks taken to prevent the onset or progression of cumulative trauma disorders in the computerized workstation environment. The authors examined the benefit of microbreaks by investigating myoelectric signal (MES) behavior, perceived discomfort, and worker productivity while individuals performed their usual keying work. Participants were randomly assigned to one of three experimental groups. Each participant provided data from working sessions where they took no breaks, and from working sessions where they took breaks according to their group assignment: microbreaks at their own discretion (control), microbreaks at 20 min intervals, and microbreaks at 40 min intervals. Four main muscle areas were studied: the cervical extensors, the lumbar erector spinae, the upper trapezius/supraspinatus, and the wrist and finger extensors. The authors have previously shown that when computer workers remained seated at their workstation, the muscles performing sustained postural contractions displayed a cyclic trend in the mean frequency (MNF) of the MES (McLean et al., J. Electrophysiol. Kinesiol. 10 (1) (2000) 33). The data provided evidence (p < 0.05) that all microbreak protocols were associated with a higher frequency of MNF cycling at the wrist extensors, at the neck when microbreaks were taken by the control and 40 min protocol groups, and at the back when breaks were taken by the 20 and 40 min protocol groups. No significant change in the frequency of MNF cycling was noted at the shoulder. It was determined (p < 0.05) that microbreaks had a positive effect on reducing discomfort in all areas studied during computer terminal work, particularly when breaks were taken at 20 min intervals. Finally, microbreaks showed no evidence of a detrimental effect on worker productivity. The underlying cause of MNF cycling, and its relationship to the development of discomfort or cumulative trauma disorders remains to be determined.",
-                                            sourceLink: "https://www.researchgate.net/publication/11945902_Computer_terminal_work_and_the_benefit_of_microbreaks"
-                                        )
-                                    } label: {
-                                        ResearchStudyRow(
-                                            title: "Computer Terminal Work and The Benefit of Microbreaks",
-                                            description: "The efect of `microbreak protocols on muscle activation behavior"
-                                        )
-                                    }
-                                    .listRowBackground(Color.gray.opacity(0.2))
+                            .foregroundColor(.fontApp)
+                            .scrollDisabled(true)
+                            .onScrollPhaseChange { _, newPhase in
+                                if newPhase == .interacting {
+                                    dismissKeyboard()
                                 }
-                                .listStyle(PlainListStyle())
-                                .scrollContentBackground(.hidden)
-                                
-                                Spacer()
                             }
-                            .background(Color.black)
-                            .navigationBarHidden(true)
+                        
+                        // Sheets
+                        .sheet(isPresented: $showingNotifications) {
+                            notificationsSheet
                         }
+                        .sheet(isPresented: $showingResearchStudies) {
+                            researchStudiesSheet
+                        }
+                        .sheet(isPresented: $showingDevices) {
+                            devicesSheet
+                        }
+                        .sheet(isPresented: $showingApps) {
+                            AppsView(isPresented: $showingApps)
+                        }
+                        
+                        Spacer()
                     }
                 }
-                
-                // Sheet with iOS-style navigation bar for Devices
-                .sheet(isPresented: $showingDevices) {
-                    ModalView(title: "Devices", isPresented: $showingDevices) {
-                        VStack(alignment: .leading, spacing: 15) {
-                            Spacer()
-                                .frame(height: 20)
-                            
-                            List {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text("iPhone 15")
-                                            .foregroundColor(.white)
-                                        Text("Last synced: Today, 14:30")
-                                            .font(.footnote)
-                                            .foregroundColor(.white.opacity(0.7))
-                                    }
-                                    Spacer()
-                                    Text("Connected")
-                                        .foregroundColor(.green)
-                                }
-                                .listRowBackground(Color.gray.opacity(0.2))
-                                .listRowSeparator(.visible)
-                                .overlay(
-                                    Rectangle()
-                                        .frame(height: 0.5)
-                                        .foregroundColor(.white.opacity(0.3))
-                                        .padding(.horizontal, 5)
-                                        .offset(y: 10),
-                                    alignment: .bottom
-                                )
-                                
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text("Apple Watch Series 10")
-                                            .foregroundColor(.white)
-                                        Text("Last synced: Today, 14:25")
-                                            .font(.footnote)
-                                            .foregroundColor(.white.opacity(0.7))
-                                    }
-                                    Spacer()
-                                    Text("Connected")
-                                        .foregroundColor(.green)
-                                }
-                                .listRowBackground(Color.gray.opacity(0.2))
-                                .listRowSeparator(.visible)
-                            }
-                            .listStyle(PlainListStyle())
-                            .scrollContentBackground(.hidden)
-                            
-                            Text("These devices are currently linked to your account.")
-                                .font(.footnote)
-                                .foregroundColor(.white.opacity(0.7))
-                                .padding(.horizontal)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                            Spacer()
-                        }
-                    }
-                }
-                
-                // Sheet with iOS-style navigation bar for Apps
-                .sheet(isPresented: $showingApps) {
-                    AppsView(isPresented: $showingApps)
-                }
-                
-                Spacer()
-                Spacer()
             }
         }
         .navigationBarHidden(true)
-        // Ubah onTapGesture agar tidak mengganggu tombol
         .background(
             Color.clear
                 .contentShape(Rectangle())
-                .onTapGesture {
-                    dismissKeyboard()
+                .onTapGesture { dismissKeyboard() }
+        )
+    }
+    
+    // MARK: - Component Views
+    
+    private var headerView: some View {
+        VStack {
+            Spacer()
+                .frame(height: 20)
+            ZStack {
+                // Center title
+                
+                Text("Profile")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.fontApp)
+
+                // Left-aligned back button
+                HStack {
+                    Button(action: {
+                        dismiss() // Dismiss the current view to navigate back
+                    }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.blue)
+                            Text("Back")
+                                .foregroundColor(.blue)
+                                .font(.system(size: 17))
+                        }
+                        .padding(.leading)
+                    }
+                    Spacer()
                 }
+            }
+            .padding(.horizontal)
+        }
+        .padding(.bottom, 25)
+        .background(.secondaryApp)
+    }
+    
+    private var mainContentList: some View {
+        List {
+            // Personal Information Section
+            Section(header: Text("Personal Information")) {
+                // Name Row
+                formTextField(label: "Name", text: $name)
+                
+                // Age Row
+                formTextField(label: "Age", text: $age, isNumeric: true)
+
+                // Working Hours Row
+                formTimeRangePicker(
+                    label: "Working Hours",
+                    startTime: $workingHoursStart,
+                    endTime: $workingHoursEnd
+                )
+                
+                // Lunch Break Row
+                formTimeRangePicker(
+                    label: "Lunch Break",
+                    startTime: $restHoursStart,
+                    endTime: $restHoursEnd
+                )
+                
+                // Notifications Row
+                navigationRow(title: "Notifications") {
+                    showingNotifications = true
+                }
+            }
+            
+            // Privacy & Resources Section
+            Section(header: Text("Privacy & Resources")) {
+                navigationRow(title: "Apps") {
+                    showingApps = true
+                }
+                
+                navigationRow(title: "Research Studies") {
+                    showingResearchStudies = true
+                }
+                
+                navigationRow(title: "Devices") {
+                    showingDevices = true
+                }
+                
+                Text("Your data is encrypted on your device and can only be shared with your permission.")
+                    .font(.footnote)
+                    .foregroundColor(.white.opacity(0.7))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 2)
+                    .listRowBackground(Color.primaryApp)
+            }
+        }
+    }
+    
+    // MARK: - Reusable Components
+    
+    private func formTextField(label: String, text: Binding<String>, isNumeric: Bool = false) -> some View {
+        HStack {
+            Text(label)
+                .foregroundColor(.white)
+            Spacer()
+            TextField(label, text: text, onCommit: saveValues)
+                .foregroundColor(.white.opacity(0.7))
+                .multilineTextAlignment(.trailing)
+                .focused(isNumeric ? $isAgeFieldFocused : $isNameFieldFocused)
+                .keyboardType(isNumeric ? .numberPad : .default)
+        }
+        .listRowBackground(Color.gray.opacity(0.2))
+        .overlay(rowSeparator)
+        .if(isNumeric) { view in
+            view.toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { dismissKeyboard() }
+                        .foregroundColor(.blue)
+                        .font(.system(size: 16, weight: .semibold))
+                }
+            }
+        }
+    }
+    
+    private func formTimeRangePicker(label: String, startTime: Binding<Date>, endTime: Binding<Date>) -> some View {
+        HStack {
+            Text(label)
+                .foregroundColor(.white)
+            Spacer()
+            HStack(spacing: 5) {
+                timePicker(selection: startTime)
+                Text("-")
+                    .foregroundColor(.white.opacity(0.7))
+                timePicker(selection: endTime)
+            }
+        }
+        .listRowBackground(Color.gray.opacity(0.2))
+        .overlay(rowSeparator)
+    }
+    
+    private func timePicker(selection: Binding<Date>) -> some View {
+        DatePicker("", selection: selection, displayedComponents: .hourAndMinute)
+            .labelsHidden()
+            .accentColor(.blue)
+            .foregroundColor(.white)
+            .environment(\.colorScheme, .dark)
+            .frame(width: 70)
+            .onChange(of: selection.wrappedValue) { _ in saveValues() }
+    }
+    
+    private func navigationRow(title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                    .foregroundColor(.white)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.blue)
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+        .contentShape(Rectangle())
+        .listRowBackground(Color.gray.opacity(0.2))
+        .overlay(rowSeparator)
+    }
+    
+    private var rowSeparator: some View {
+        Rectangle()
+            .frame(height: 0.5)
+            .foregroundColor(.white.opacity(0.3))
+            .offset(y: 22)
+    }
+    
+    // MARK: - Sheet Views
+    
+    private var notificationsSheet: some View {
+        ModalView(title: "Notifications", isPresented: $showingNotifications) {
+            VStack(alignment: .leading, spacing: 15) {
+                Spacer().frame(height: 20)
+                
+                List {
+                    NotificationSettingRow(title: "Activity Reminders", isOn: true)
+                        .listRowBackground(Color.gray.opacity(0.2))
+                        .overlay(rowSeparator)
+                    
+                    NotificationSettingRow(title: "Weekly Reports", isOn: true)
+                        .listRowBackground(Color.gray.opacity(0.2))
+                        .overlay(rowSeparator)
+                    
+                    NotificationSettingRow(title: "Goal Achievements", isOn: true)
+                        .listRowBackground(Color.gray.opacity(0.2))
+                        .overlay(rowSeparator)
+                    
+                    NotificationSettingRow(title: "Break Reminders", isOn: false)
+                        .listRowBackground(Color.gray.opacity(0.2))
+                        .overlay(rowSeparator)
+                    
+                    NotificationSettingRow(title: "App Updates", isOn: false)
+                        .listRowBackground(Color.gray.opacity(0.2))
+                }
+                .listStyle(PlainListStyle())
+                .scrollContentBackground(.hidden)
+                
+                Text("You'll receive notifications according to these settings during your specified working hours.")
+                    .font(.footnote)
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(.horizontal)
+                
+                // Add spacer to fill remaining space
+                Spacer()
+                    .frame(height: 390) // Fixed height for vertical Spacer
+            }
+        }
+    }
+    
+    private var researchStudiesSheet: some View {
+        ModalView(title: "Research Studies", isPresented: $showingResearchStudies) {
+            NavigationStack {
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("Active Research Studies")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal)
+                        .padding(.top)
+                    
+                    List {
+                        researchStudyLink(
+                            title: "Effects of Active Microbreak",
+                            description: "How active microbreaks can positively impact the physical and mental well-being of office workers.",
+                            content: "Risk factors associated with sedentary work and prolonged sitting time can be detrimental to office workers' health and productivity. Recent literature introduced the concept of active microbreaks and their benefits to sedentary workers. The purpose of this study was to better define active microbreaks and to determine the evidence behind utilizing active microbreaks at work, through a qualitative synthesis of the literature in a systematic review. A comprehensive systematic search was conducted using primarily ergonomics, medicine and allied health databases, in addition to grey literature (CINAHL, Google Scholar, PubMed, and ScienceDirect) and respective ergonomics journals. Six interventional controlled trials (232 total participants) met the inclusion criteria and qualified for the inclusion in this review. The quality of the reviewed articles was deemed to be moderate to high according to the utilized assessment scales. The results of this review may support the use of short active microbreaks (2–3 minutes of light intensity exercises every 30 minutes) due to the observed physical and mental health benefits without negative impact on productivity in the workplace.",
+                            sourceLink: "https://www.tandfonline.com/doi/pdf/10.1080/23311916.2022.2026206"
+                        )
+                        
+                        researchStudyLink(
+                            title: "Workstation Setup Effects on Discomfort and Productivity",
+                            description: "This study compares two workstation setups—ergonomically-fitted (Ergo-Fit) and self-adjusted—during a 60-minute sit-stand-walk computer task.",
+                            content: "Compare musculoskeletal discomfort, productivity, postural risks, and perceived fatigue for a sit-stand-walk intervention between two workstation configurations – one, individually customized for office workers according to ergonomic guidelines (Ergo-Fit); another, self-adjusted by office workers according to their preference (Self-Adjusted).",
+                            sourceLink: "https://www.sciencedirect.com/science/article/abs/pii/S0003687018307221"
+                        )
+                        
+                        researchStudyLink(
+                            title: "Computer Terminal Work and The Benefit of Microbreaks",
+                            description: "The efect of `microbreak protocols on muscle activation behavior",
+                            content: "Microbreaks are scheduled rest breaks taken to prevent the onset or progression of cumulative trauma disorders in the computerized workstation environment. The authors examined the benefit of microbreaks by investigating myoelectric signal (MES) behavior, perceived discomfort, and worker productivity while individuals performed their usual keying work. Participants were randomly assigned to one of three experimental groups. Each participant provided data from working sessions where they took no breaks, and from working sessions where they took breaks according to their group assignment: microbreaks at their own discretion (control), microbreaks at 20 min intervals, and microbreaks at 40 min intervals. Four main muscle areas were studied: the cervical extensors, the lumbar erector spinae, the upper trapezius/supraspinatus, and the wrist and finger extensors. The authors have previously shown that when computer workers remained seated at their workstation, the muscles performing sustained postural contractions displayed a cyclic trend in the mean frequency (MNF) of the MES (McLean et al., J. Electrophysiol. Kinesiol. 10 (1) (2000) 33). The data provided evidence (p < 0.05) that all microbreak protocols were associated with a higher frequency of MNF cycling at the wrist extensors, at the neck when microbreaks were taken by the control and 40 min protocol groups, and at the back when breaks were taken by the 20 and 40 min protocol groups. No significant change in the frequency of MNF cycling was noted at the shoulder. It was determined (p < 0.05) that microbreaks had a positive effect on reducing discomfort in all areas studied during computer terminal work, particularly when breaks were taken at 20 min intervals. Finally, microbreaks showed no evidence of a detrimental effect on worker productivity. The underlying cause of MNF cycling, and its relationship to the development of discomfort or cumulative trauma disorders remains to be determined.",
+                            sourceLink: "https://www.researchgate.net/publication/11945902_Computer_terminal_work_and_the_benefit_of_microbreaks"
+                        )
+                    }
+                    .listStyle(PlainListStyle())
+                    .scrollContentBackground(.hidden)
+                    
+                    Spacer()
+                }
+                .background(Color.black)
+                .navigationBarHidden(true)
+            }
+        }
+    }
+    
+    private func researchStudyLink(title: String, description: String, content: String, sourceLink: String) -> some View {
+        NavigationLink {
+            DetailView(
+                title: title,
+                content: content,
+                sourceLink: sourceLink
+            )
+        } label: {
+            ResearchStudyRow(
+                title: title,
+                description: description
+            )
+        }
+        .listRowBackground(Color.gray.opacity(0.2))
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(.white.opacity(0.3))
+                .padding(.horizontal, 5)
+                .offset(y: 10),
+            alignment: .bottom
+        )
+    }
+    
+    private var devicesSheet: some View {
+        ModalView(title: "Devices", isPresented: $showingDevices) {
+            VStack(alignment: .leading, spacing: 15) {
+                Spacer().frame(height: 20)
+                
+                List {
+                    deviceRow(
+                        deviceName: "iPhone 15",
+                        lastSynced: "Today, 14:30",
+                        status: "Connected",
+                        statusColor: .green
+                    )
+                    
+                    deviceRow(
+                        deviceName: "Apple Watch Series 10",
+                        lastSynced: "Today, 14:25",
+                        status: "Connected",
+                        statusColor: .green
+                    )
+                }
+                .listStyle(PlainListStyle())
+                .scrollContentBackground(.hidden)
+                
+                Text("These devices are currently linked to your account.")
+                    .font(.footnote)
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(.horizontal)
+                
+                Spacer()
+                    .frame(height: 510) // Fixed height for vertical Spacer
+            }
+        }
+    }
+    
+    private func deviceRow(deviceName: String, lastSynced: String, status: String, statusColor: Color) -> some View {
+        HStack {
+            VStack(alignment: .leading) {
+                Text(deviceName)
+                    .foregroundColor(.white)
+                Text("Last synced: \(lastSynced)")
+                    .font(.footnote)
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            Spacer()
+            Text(status)
+                .foregroundColor(statusColor)
+        }
+        .listRowBackground(Color.gray.opacity(0.2))
+        .listRowSeparator(.visible)
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(.white.opacity(0.3))
+                .padding(.horizontal, 5)
+                .offset(y: 10),
+            alignment: .bottom
         )
     }
 }
 
-// Reusable modal view with iOS-style navigation bar
+// MARK: - View Extensions
+extension View {
+    @ViewBuilder
+    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
+}
+
+// MARK: - Reusable Modal View
 struct ModalView<Content: View>: View {
     let title: String
     @Binding var isPresented: Bool
@@ -588,28 +457,21 @@ struct ModalView<Content: View>: View {
             Color.black.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // iOS-style navigation bar
                 ZStack {
                     Color(UIColor.darkGray).opacity(0.6)
                         .frame(height: 60)
                     
-                    HStack {
-                        Spacer()
-                        Text(title)
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.white)
-                        Spacer()
-                    }
+                    Text(title)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.white)
                     
                     HStack {
                         Spacer()
-                        Button(action: {
+                        Button("Done") {
                             isPresented = false
-                        }) {
-                            Text("Done")
-                                .foregroundColor(.blue)
-                                .padding(.trailing)
                         }
+                        .foregroundColor(.blue)
+                        .padding(.trailing)
                     }
                 }
                 
@@ -619,7 +481,9 @@ struct ModalView<Content: View>: View {
     }
 }
 
-// Helper components for notifications settings
+// MARK: - Supporting Components
+
+// Notification Setting Toggle Row
 struct NotificationSettingRow: View {
     let title: String
     @State var isOn: Bool
@@ -636,7 +500,7 @@ struct NotificationSettingRow: View {
     }
 }
 
-// Helper component for research studies
+// Research Study Row for Lists
 struct ResearchStudyRow: View {
     let title: String
     let description: String
@@ -656,6 +520,7 @@ struct ResearchStudyRow: View {
             
             Spacer()
             
+            
             Image(systemName: "chevron.right")
                 .foregroundColor(.blue)
         }
@@ -663,7 +528,7 @@ struct ResearchStudyRow: View {
     }
 }
 
-// Detail view for a research study
+// Detail View for Research Studies
 struct DetailView: View {
     let title: String
     let content: String
@@ -673,35 +538,31 @@ struct DetailView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            VStack(alignment: .leading, spacing: 20) {
-                Text(title)
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal)
-                    .padding(.top, 20)
-                
-                Text("Content")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal)
-                
-                Text(content)
-                    .font(.system(size: 16))
-                    .foregroundColor(.white.opacity(0.7))
-                    .padding(.horizontal)
-                
-                Text("Source")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal)
-                    .padding(.top, 10)
-                
-                Link("Read more at the source", destination: URL(string: sourceLink)!)
-                    .font(.system(size: 16))
-                    .foregroundColor(.blue)
-                    .padding(.horizontal)
-                
-                Spacer()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text(title)
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.top, 20)
+                    
+                    Text("Content")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                    
+                    Text(content)
+                        .font(.system(size: 16))
+                        .foregroundColor(.white.opacity(0.7))
+                    
+                    Text("Source")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.top, 10)
+                    
+                    Link("Read more at the source", destination: URL(string: sourceLink)!)
+                        .font(.system(size: 16))
+                        .foregroundColor(.blue)
+                }
+                .padding(.horizontal)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -709,7 +570,7 @@ struct DetailView: View {
     }
 }
 
-// Apps view with swipe-to-delete and alert
+// Apps View with Swipe-to-Delete
 struct AppsView: View {
     @Binding var isPresented: Bool
     
@@ -726,40 +587,14 @@ struct AppsView: View {
         ModalView(title: "Apps", isPresented: $isPresented) {
             VStack(alignment: .leading, spacing: 15) {
                 Text("Manage your connected applications here.")
-                    .font(.system(size: 16))
+                    .font(.system(size: 15))
                     .foregroundColor(.white.opacity(0.7))
                     .padding(.horizontal)
                     .padding(.top)
                 
                 List {
                     ForEach(apps, id: \.name) { app in
-                        HStack {
-                            Image(systemName: app.icon)
-                                .foregroundColor(.red)
-                                .frame(width: 30, height: 30)
-                            VStack(alignment: .leading) {
-                                Text(app.name)
-                                    .foregroundColor(.white)
-                                Text("Access: \(app.access)")
-                                    .font(.footnote)
-                                    .foregroundColor(.white.opacity(0.7))
-                            }
-                        }
-                        .listRowBackground(Color.gray.opacity(0.2))
-                        .overlay(
-                            Rectangle()
-                                .frame(width: 900.0, height: 0.5)
-                                .foregroundColor(.white.opacity(0.3))
-                                .offset(y: 30)
-                        )
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                appToDelete = app
-                                showDeleteAlert = true
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
+                        appRow(app: app)
                     }
                 }
                 .listStyle(PlainListStyle())
@@ -769,25 +604,10 @@ struct AppsView: View {
                     .font(.footnote)
                     .foregroundColor(.white.opacity(0.7))
                     .padding(.horizontal)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                
                 Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
-                Spacer()
+                    .frame(height: 400) // Fixed height for vertical Spacer
+
             }
             .background(Color.black)
             .alert(isPresented: $showDeleteAlert) {
@@ -804,6 +624,36 @@ struct AppsView: View {
                         appToDelete = nil
                     }
                 )
+            }
+        }
+    }
+    
+    private func appRow(app: (name: String, icon: String, access: String)) -> some View {
+        HStack {
+            Image(systemName: app.icon)
+                .foregroundColor(.red)
+                .frame(width: 30, height: 30)
+            VStack(alignment: .leading) {
+                Text(app.name)
+                    .foregroundColor(.white)
+                Text("Access: \(app.access)")
+                    .font(.footnote)
+                    .foregroundColor(.white.opacity(0.7))
+            }
+        }
+        .listRowBackground(Color.gray.opacity(0.2))
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(.white.opacity(0.3))
+                .offset(y: 30)
+        )
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                appToDelete = app
+                showDeleteAlert = true
+            } label: {
+                Label("Delete", systemImage: "trash")
             }
         }
     }

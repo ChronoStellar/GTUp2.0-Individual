@@ -7,12 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9B2718D92E0B9FEC004A1C50 /* GTUpWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 9B2718CF2E0B9FEB004A1C50 /* GTUpWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9B4979062DCDAAEC006F4839 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B4979052DCDAAEC006F4839 /* WidgetKit.framework */; };
 		9B4979082DCDAAEC006F4839 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B4979072DCDAAEC006F4839 /* SwiftUI.framework */; };
 		9B4979152DCDAAED006F4839 /* LiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9B4979032DCDAAEC006F4839 /* LiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		9B2718D72E0B9FEC004A1C50 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B8A283F2DC87403003769DD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B2718CE2E0B9FEB004A1C50;
+			remoteInfo = "GTUpWatch Watch App";
+		};
 		9B4979132DCDAAED006F4839 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9B8A283F2DC87403003769DD /* Project object */;
@@ -23,6 +31,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		9B2718DA2E0B9FEC004A1C50 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				9B2718D92E0B9FEC004A1C50 /* GTUpWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B49791A2DCDAAED006F4839 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -37,6 +56,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9B2718CF2E0B9FEB004A1C50 /* GTUpWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GTUpWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4979032DCDAAEC006F4839 /* LiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B4979052DCDAAEC006F4839 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		9B4979072DCDAAEC006F4839 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -68,6 +88,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		9B2718D02E0B9FEB004A1C50 /* GTUpWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "GTUpWatch Watch App";
+			sourceTree = "<group>";
+		};
 		9B4979092DCDAAEC006F4839 /* LiveActivity */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -87,6 +112,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		9B2718CC2E0B9FEB004A1C50 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B4979002DCDAAEC006F4839 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -121,6 +153,7 @@
 				9BB6C3A02DE4029800383453 /* LiveActivityExtension.entitlements */,
 				9B8A28492DC87403003769DD /* GTUp! */,
 				9B4979092DCDAAEC006F4839 /* LiveActivity */,
+				9B2718D02E0B9FEB004A1C50 /* GTUpWatch Watch App */,
 				9B4979042DCDAAEC006F4839 /* Frameworks */,
 				9B8A28482DC87403003769DD /* Products */,
 			);
@@ -131,6 +164,7 @@
 			children = (
 				9B8A28472DC87403003769DD /* GTUp!.app */,
 				9B4979032DCDAAEC006F4839 /* LiveActivityExtension.appex */,
+				9B2718CF2E0B9FEB004A1C50 /* GTUpWatch Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -138,6 +172,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		9B2718CE2E0B9FEB004A1C50 /* GTUpWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B2718DD2E0B9FEC004A1C50 /* Build configuration list for PBXNativeTarget "GTUpWatch Watch App" */;
+			buildPhases = (
+				9B2718CB2E0B9FEB004A1C50 /* Sources */,
+				9B2718CC2E0B9FEB004A1C50 /* Frameworks */,
+				9B2718CD2E0B9FEB004A1C50 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9B2718D02E0B9FEB004A1C50 /* GTUpWatch Watch App */,
+			);
+			name = "GTUpWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "GTUpWatch Watch App";
+			productReference = 9B2718CF2E0B9FEB004A1C50 /* GTUpWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 		9B4979022DCDAAEC006F4839 /* LiveActivityExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9B4979172DCDAAED006F4839 /* Build configuration list for PBXNativeTarget "LiveActivityExtension" */;
@@ -168,11 +224,13 @@
 				9B8A28442DC87403003769DD /* Frameworks */,
 				9B8A28452DC87403003769DD /* Resources */,
 				9B49791A2DCDAAED006F4839 /* Embed Foundation Extensions */,
+				9B2718DA2E0B9FEC004A1C50 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				9B4979142DCDAAED006F4839 /* PBXTargetDependency */,
+				9B2718D82E0B9FEC004A1C50 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				9B8A28492DC87403003769DD /* GTUp! */,
@@ -191,9 +249,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1620;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					9B2718CE2E0B9FEB004A1C50 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 					9B4979022DCDAAEC006F4839 = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -218,11 +279,19 @@
 			targets = (
 				9B8A28462DC87403003769DD /* GTUp! */,
 				9B4979022DCDAAEC006F4839 /* LiveActivityExtension */,
+				9B2718CE2E0B9FEB004A1C50 /* GTUpWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		9B2718CD2E0B9FEB004A1C50 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B4979012DCDAAEC006F4839 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -240,6 +309,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9B2718CB2E0B9FEB004A1C50 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B4978FF2DCDAAEC006F4839 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -257,6 +333,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		9B2718D82E0B9FEC004A1C50 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9B2718CE2E0B9FEB004A1C50 /* GTUpWatch Watch App */;
+			targetProxy = 9B2718D72E0B9FEC004A1C50 /* PBXContainerItemProxy */;
+		};
 		9B4979142DCDAAED006F4839 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9B4979022DCDAAEC006F4839 /* LiveActivityExtension */;
@@ -265,6 +346,62 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		9B2718DB2E0B9FEC004A1C50 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = GTUpWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.GTUp-";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.GTUp-.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.6;
+			};
+			name = Debug;
+		};
+		9B2718DC2E0B9FEC004A1C50 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = GTUpWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.GTUp-";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.GTUp-.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.6;
+			};
+			name = Release;
+		};
 		9B4979182DCDAAED006F4839 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -507,6 +644,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		9B2718DD2E0B9FEC004A1C50 /* Build configuration list for PBXNativeTarget "GTUpWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B2718DB2E0B9FEC004A1C50 /* Debug */,
+				9B2718DC2E0B9FEC004A1C50 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		9B4979172DCDAAED006F4839 /* Build configuration list for PBXNativeTarget "LiveActivityExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

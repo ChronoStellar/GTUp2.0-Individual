@@ -15,7 +15,7 @@ struct GTUp_App: App {
             ContentView()
                 .environmentObject(manager)
                 .modelContainer(for: Break.self)
-//            TimerView(isTimerRunning: .constant(false))
+                .preferredColorScheme(.dark)
         }
     }
 }

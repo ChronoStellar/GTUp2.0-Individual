@@ -17,7 +17,7 @@ struct DataView: View {
                 .ignoresSafeArea()
             VStack(spacing: 20) {
                 VStack {
-                    Text("Health Data")
+                    Text("Data Analytics")
                         .font(.system(size: 20, weight: .bold, design: .default))
                         .foregroundColor(.fontApp)
                     CalendarView(selectedDate: $selectedDate)

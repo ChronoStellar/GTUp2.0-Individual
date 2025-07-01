@@ -16,7 +16,6 @@ struct ProfileView: View {
     @State private var showingNotifications = false
     @State private var showingResearchStudies = false
     @State private var showingDevices = false
-    @State private var showingApps = false
     
     @FocusState private var isNameFieldFocused: Bool
     @FocusState private var isAgeFieldFocused: Bool
@@ -76,9 +75,7 @@ struct ProfileView: View {
                         .sheet(isPresented: $showingDevices) {
                             devicesSheet
                         }
-                        .sheet(isPresented: $showingApps) {
-                            AppsView(isPresented: $showingApps)
-                        }
+
                         
                         Spacer()
                     }
@@ -161,9 +158,7 @@ struct ProfileView: View {
             
             // Privacy & Resources Section
             Section(header: Text("Privacy & Resources")) {
-                navigationRow(title: "Apps") {
-                    showingApps = true
-                }
+               
                 
                 navigationRow(title: "Research Studies") {
                     showingResearchStudies = true
@@ -570,94 +565,6 @@ struct DetailView: View {
     }
 }
 
-// Apps View with Swipe-to-Delete
-struct AppsView: View {
-    @Binding var isPresented: Bool
-    
-    @State private var apps: [(name: String, icon: String, access: String)] = [
-        (name: "Health", icon: "heart.fill", access: "Heart Rate, Steps, Stand Hours"),
-        (name: "Fitness", icon: "figure.walk", access: "Workouts, Activity Rings"),
-        (name: "Calendar", icon: "calendar", access: "Events, Reminders")
-    ]
-    
-    @State private var showDeleteAlert = false
-    @State private var appToDelete: (name: String, icon: String, access: String)? = nil
-    
-    var body: some View {
-        ModalView(title: "Apps", isPresented: $isPresented) {
-            VStack(alignment: .leading, spacing: 15) {
-                Text("Manage your connected applications here.")
-                    .font(.system(size: 15))
-                    .foregroundColor(.white.opacity(0.7))
-                    .padding(.horizontal)
-                    .padding(.top)
-                
-                List {
-                    ForEach(apps, id: \.name) { app in
-                        appRow(app: app)
-                    }
-                }
-                .listStyle(PlainListStyle())
-                .scrollContentBackground(.hidden)
-                
-                Text("You can view, add, or remove apps that have access to your data.")
-                    .font(.footnote)
-                    .foregroundColor(.white.opacity(0.7))
-                    .padding(.horizontal)
-                
-                Spacer()
-                    .frame(height: 400) // Fixed height for vertical Spacer
-
-            }
-            .background(Color.black)
-            .alert(isPresented: $showDeleteAlert) {
-                Alert(
-                    title: Text("Remove App"),
-                    message: Text("Are you sure you want to remove \(appToDelete?.name ?? "this app") from your connected apps?"),
-                    primaryButton: .destructive(Text("Remove")) {
-                        if let app = appToDelete {
-                            apps.removeAll { $0.name == app.name }
-                        }
-                        appToDelete = nil
-                    },
-                    secondaryButton: .cancel() {
-                        appToDelete = nil
-                    }
-                )
-            }
-        }
-    }
-    
-    private func appRow(app: (name: String, icon: String, access: String)) -> some View {
-        HStack {
-            Image(systemName: app.icon)
-                .foregroundColor(.red)
-                .frame(width: 30, height: 30)
-            VStack(alignment: .leading) {
-                Text(app.name)
-                    .foregroundColor(.white)
-                Text("Access: \(app.access)")
-                    .font(.footnote)
-                    .foregroundColor(.white.opacity(0.7))
-            }
-        }
-        .listRowBackground(Color.gray.opacity(0.2))
-        .overlay(
-            Rectangle()
-                .frame(height: 0.5)
-                .foregroundColor(.white.opacity(0.3))
-                .offset(y: 30)
-        )
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button(role: .destructive) {
-                appToDelete = app
-                showDeleteAlert = true
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-    }
-}
 
 #Preview {
     ProfileView()
